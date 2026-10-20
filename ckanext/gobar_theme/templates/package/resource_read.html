@@ -18,3 +18,14 @@
 {% endblock %}
 
 {% block resource_read_title %}<h1 class="page-heading" title="{{ h.resource_display_name(res) }}">{{ h.resource_display_name(res) }}</h1>{% endblock %}
+
+{% block resource_content %}
+  {{ super() }}
+  {# Con el nombre del dataset la URL pasa los 128 caracteres del formulario en
+     ~1/3 de los casos; con los ids queda siempre en 111. #}
+  {% set ref = h.url_for('resource.read', id=pkg.name, resource_id=res.id, qualified=True) %}
+  {% if ref | length > 128 %}
+    {% set ref = h.url_for('resource.read', id=pkg.id, resource_id=res.id, qualified=True) %}
+  {% endif %}
+  {% snippet 'snippets/reportar_problema.html', ref=ref %}
+{% endblock %}
