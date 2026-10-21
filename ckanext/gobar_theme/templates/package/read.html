@@ -1,0 +1,7 @@
+{% ckan_extends %}
+
+{# Aviso "Reportar un problema" debajo de la lista de recursos. #}
+{% block package_resources %}
+  {{ super() }}
+  {% snippet 'snippets/reportar_problema.html', ref=h.url_for('dataset.read', id=pkg.name, qualified=True) %}
+{% endblock %}

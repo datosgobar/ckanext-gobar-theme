@@ -1,4 +1,6 @@
 {% ckan_extends %}
 
-{# Oculta el contador de "Seguidores" del sidebar del dataset. #}
+{# Oculta el título (ya está en el <h1> de la página) y el contador de
+   "Seguidores" del sidebar del dataset. #}
+{% block heading %}{% endblock %}
 {% block nums %}{% endblock %}
