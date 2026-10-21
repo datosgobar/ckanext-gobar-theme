@@ -128,3 +128,26 @@ def test_format_date_vacio_no_renderiza_nada(vacio):
 
 def test_format_date_invalida_devuelve_el_valor_original():
     assert helpers.gobar_format_date("no-es-fecha") == "no-es-fecha"
+
+
+def test_org_tree_prune_deja_coincidencias_y_ancestros():
+    top_nodes, _ = _tree()
+    podado = helpers.gobar_org_tree_prune(top_nodes, {"aduana"})
+    assert [n["name"] for n in podado] == ["economia"]
+    economia = podado[0]
+    assert [n["name"] for n in economia["children"]] == ["afip"]
+    assert [n["name"] for n in economia["children"][0]["children"]] == ["aduana"]
+
+
+def test_org_tree_prune_descarta_hijos_que_no_coinciden():
+    top_nodes, _ = _tree()
+    podado = helpers.gobar_org_tree_prune(top_nodes, {"economia", "salud"})
+    assert [n["name"] for n in podado] == ["economia", "salud"]
+    assert podado[0]["children"] == []
+
+
+def test_org_tree_prune_sin_coincidencias_y_sin_mutar():
+    top_nodes, by_name = _tree()
+    assert helpers.gobar_org_tree_prune(top_nodes, {"no_existe"}) == []
+    helpers.gobar_org_tree_prune(top_nodes, {"aduana"})
+    assert len(by_name["economia"]["children"]) == 2

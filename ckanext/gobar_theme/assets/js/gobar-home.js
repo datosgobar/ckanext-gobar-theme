@@ -1,6 +1,7 @@
 /**
  * gobar-home.js
  * Counter animation + Organizations carousel + Custom pages nav
+ * + scroll a la coincidencia en la búsqueda de organismos
  */
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -71,4 +72,8 @@ document.addEventListener('DOMContentLoaded', function () {
     track.addEventListener('scroll', updateButtons);
     updateButtons();
   }
+
+  // ── Búsqueda de organismos: lleva la vista a la primera coincidencia ──
+  var hit = document.querySelector('.gobar-org-tree li.highlighted');
+  if (hit) hit.scrollIntoView({ block: 'center' });
 });
