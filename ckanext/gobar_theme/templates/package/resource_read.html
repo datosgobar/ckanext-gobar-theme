@@ -29,3 +29,13 @@
   {% endif %}
   {% snippet 'snippets/reportar_problema.html', ref=ref %}
 {% endblock %}
+
+{#
+  Sin vistas, core muestra "Todavía no existen vistas creadas para este
+  recurso", que al público no le dice nada. Solo lo ve quien puede crearlas.
+#}
+{% block resource_view_content %}
+  {% if resource_views or h.check_access('resource_view_create', {'resource_id': res.id}) %}
+    {{ super() }}
+  {% endif %}
+{% endblock %}

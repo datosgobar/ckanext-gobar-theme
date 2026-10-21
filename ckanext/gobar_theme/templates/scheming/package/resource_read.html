@@ -1,0 +1,47 @@
+{% ckan_extends %}
+
+{#
+  Override de ckanext-gobar-theme — "Información adicional" del recurso.
+  1) Reemplaza la tabla de scheming por la ficha snippets/gobar_metadatos.html.
+     Las filas que core escondía detrás de "Mostrar más" (Id, Package id,
+     Position...) siguen detrás de "Mostrar más", al final de la lista.
+  2) Vacía resource_license: scheming usa ese nombre de bloque para la fila
+     de licencia de su tabla y, como core usa el mismo nombre en el sidebar,
+     la fila terminaba ahí como texto suelto ("Licencia CC-BY-4.0"). La
+     licencia ya está en la ficha.
+#}
+{% block resource_license %}{% endblock %}
+
+{% block resource_additional_information_inner %}
+  {% if res.datastore_active %}
+    {% block resource_data_dictionary %}
+      {{ super() }}
+    {% endblock %}
+  {% endif %}
+
+  {%- set exclude_fields = ['name', 'description', 'url', 'format'] -%}
+  {%- set rows = [
+    (_('Data last updated'), h.render_datetime(res.last_modified) or h.render_datetime(res.created)),
+    (_('Metadata last updated'), h.render_datetime(res.metadata_modified) or h.render_datetime(res.created)),
+    (_('Created'), h.render_datetime(res.created)),
+    (_('Format'), res.format or res.mimetype_inner or res.mimetype),
+  ] -%}
+  {%- set licencia -%}{% snippet "snippets/license.html", pkg_dict=pkg, text_only=True %}{%- endset -%}
+  {%- do rows.append((_('License'), licencia)) -%}
+  {%- for field in schema.resource_fields -%}
+    {%- if field.field_name not in exclude_fields and field.display_snippet is not none -%}
+      {%- set value -%}{%- snippet 'scheming/snippets/display_field.html', field=field, data=res, entity_type='dataset', object_type=dataset_type -%}{%- endset -%}
+      {%- do rows.append((h.scheming_language_text(field.label), value)) -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {%- set schema_field_names = schema.resource_fields | map(attribute='field_name') | list -%}
+  {%- set mas = [] -%}
+  {%- for key, value in h.format_resource_items(res.items()) -%}
+    {%- if key not in ('created', 'metadata modified', 'last modified', 'format') and key not in schema_field_names -%}
+      {%- do mas.append((key | capitalize, value)) -%}
+    {%- endif -%}
+  {%- endfor -%}
+  <div class="module-content">
+    {% snippet 'snippets/gobar_metadatos.html', rows=rows, mas=mas %}
+  </div>
+{% endblock %}

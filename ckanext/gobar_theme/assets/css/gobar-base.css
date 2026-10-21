@@ -328,3 +328,39 @@ a.tag:hover, a.tag:focus-visible { background: #F5F3FD; border-color: var(--goba
 .gobar-reportar-texto { flex: 1 1 220px; font-weight: 500; }
 .gobar-reportar a { color: var(--gobar-primary); font-weight: 700; text-decoration: none; white-space: nowrap; }
 .gobar-reportar a:hover, .gobar-reportar a:focus-visible { text-decoration: underline; }
+
+/* ── Ficha de metadatos ("Información adicional" de dataset y recurso) ──
+   Lista rótulo/valor con filetes en vez de la tabla cebrada de core. Sin
+   filas vacías. "Mostrar más" es un <details> nativo en vez del módulo
+   table-toggle-more de core, que comprimía la tabla al plegar/desplegar. */
+.gobar-meta { margin: 32px 0 8px; }
+.gobar-meta-title { font-family: var(--font-titulos); font-size: 22px; font-weight: 600; color: var(--gobar-primary-darker); margin: 0 0 12px; }
+.gobar-meta-list { margin: 0; border-top: 1px solid #E4E2F0; }
+.gobar-meta-row { display: grid; grid-template-columns: minmax(160px, 34%) 1fr; gap: 4px 24px; padding: 12px 4px; border-bottom: 1px solid #E4E2F0; }
+.gobar-meta-row dt { margin: 0; font-size: 14px; font-weight: 600; color: var(--gobar-gris-oscuro); }
+.gobar-meta-row dd { margin: 0; font-size: 15px; color: var(--gobar-negro); overflow-wrap: anywhere; }
+/* "Mostrar más": botón a lo ancho de la lista, debajo de la última fila.
+   Al abrir, las filas siguen debajo con las mismas columnas. */
+.gobar-meta-more > summary { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--gobar-primary); background: #FAFAFD; border-bottom: 1px solid #E4E2F0; list-style: none; }
+.gobar-meta-more > summary::-webkit-details-marker { display: none; }
+.gobar-meta-more > summary::after { content: "▾"; }
+.gobar-meta-more[open] > summary::after { content: "▴"; }
+.gobar-meta-more > summary:hover { background: #F5F3FD; }
+.gobar-meta-more > summary:focus-visible { outline: 2px solid var(--gobar-primary); outline-offset: -2px; }
+.gobar-meta-more .gobar-meta-menos, .gobar-meta-more[open] .gobar-meta-mas { display: none; }
+.gobar-meta-more[open] .gobar-meta-menos { display: inline; }
+.gobar-meta-more > .gobar-meta-list { border-top: 0; }
+@media (max-width: 575.98px) {
+  .gobar-meta-row { grid-template-columns: 1fr; gap: 2px; }
+}
+
+/* ── Sidebar: listado de recursos y licencia ──
+   Core pinta el encabezado en gris (#F6F6F6) y el recurso activo en
+   gris petróleo (#647A82) con una flecha. Acá: encabezado blanco, filetes
+   y el activo marcado con barra índigo, igual que las pestañas. */
+.secondary .module-narrow .module-heading { background: var(--gobar-blanco); border-bottom: 1px solid #E4E2F0; color: var(--gobar-primary-darker); font-size: 15px; font-weight: 600; }
+.secondary .module-narrow .module-heading .fa { color: var(--gobar-primary); margin-right: 4px; }
+.resources .nav-simple > li > a { padding: 12px 16px; border-bottom: 1px solid #E4E2F0; color: var(--gobar-gris-oscuro); font-size: 14px; line-height: 1.4; background: none; }
+.resources .nav-simple > li > a:hover, .resources .nav-simple > li > a:focus-visible { color: var(--gobar-primary); background: #FAFAFD; text-decoration: none; }
+.resources .nav-simple > li.active > a { color: var(--gobar-primary); font-weight: 600; background: #F5F3FD; box-shadow: inset 3px 0 0 var(--gobar-primary); }
+.resources .nav-simple > li.active > a::before, .resources .nav-simple > li.active > a::after { display: none; }
