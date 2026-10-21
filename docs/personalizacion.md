@@ -51,11 +51,14 @@ cada portal, **incluido el de producción**.
 
 | Elemento | `datosgobar` | `apn` (sin configurar nada más) |
 |---|---|---|
-| Logo del header y del footer | datos.gob.ar | Título del portal como texto (o `ckan.site_logo`) |
+| Logo del header | datos.gob.ar | Título del portal como texto (o `ckan.site_logo`) |
+| Logo del footer | datos.gob.ar | Ninguno (o `ckan.site_logo`); el título no se repite como texto |
 | Texto del footer | "Portal de datos abiertos de la República Argentina…" | Ninguno (o `ckan.site_description`) |
 | Home: título y bajada | "Datos Abiertos Argentina" y su texto | `ckan.site_title` + `subtitle` opcional |
 | Sección y menú Recursos | Sí | No (`show_recursos`) |
 | Columna "Recursos" del footer (Georef, Series…) | Sí | No |
+| Sección y menú Series (`series_explorer`) | Si el plugin está cargado | Nunca; además conviene sacar `series_explorer` de `CKAN__PLUGINS` |
+| Dirección, teléfono y correo en el footer | No (o `contact_*`) | No (o `contact_*`) |
 | Link institucional del footer | Dirección de Datos Abiertos | Ninguno (o `institutional_name`/`_url`) |
 | Logo de la Secretaría en el footer | Sí | No (o `footer_logo_path`) |
 | "Contacto" en el footer | Formulario de Datos Abiertos | No se muestra (o `contact_url`) |
@@ -75,7 +78,7 @@ El theme usa la configuración nativa de CKAN en vez de inventar claves propias.
 | `CKAN__SITE_LOGO` | Logo del header y del footer. Puede ser una URL absoluta (`https://…`) o una ruta servida por el portal (`/images/mi-logo.png`, dentro de `public/` del theme). Va sobre el color de marca, así que conviene una versión **blanca o clara** | datosgobar: logo de datos.gob.ar; apn: título como texto |
 | `CKAN__SITE_DESCRIPTION` | Texto de marca del footer, debajo del logo | datosgobar: texto de datos.gob.ar; apn: vacío |
 | `CKAN__SITE_ABOUT` | Texto de la página "Acerca" en `apn` (markdown, **en una sola línea**: un salto de línea `\n` dentro del valor rompe el `ckan.ini` que genera el entrypoint). El bloque "Sobre CKAN" se agrega abajo igual | apn: texto genérico de Portal Andino |
-| `CKAN__FAVICON` | Favicon | El de argentina.gob.ar |
+| `CKAN__FAVICON` | Favicon: URL absoluta o ruta servida por el portal | El de argentina.gob.ar |
 | `CKANEXT__GOBAR_THEME__SUBTITLE` | Frase debajo del título de la home (`apn`) | vacío (no se muestra) |
 | `CKANEXT__GOBAR_THEME__HERO_BACKGROUND_IMAGE` | Imagen de fondo del hero de la home, con un overlay claro automático para que el texto se lea | vacío |
 
@@ -177,9 +180,16 @@ Está en `assets/css/gobar-base.css`, bloque "VARIABLES":
 | `CKANEXT__GOBAR_THEME__CONTACT_URL` | Link "Contacto" del footer. Puede ser una URL o un `mailto:` | datosgobar: formulario de Datos Abiertos; apn: no se muestra |
 | `CKANEXT__GOBAR_THEME__REPORT_URL` | Formulario del aviso "Reportar un problema" en las páginas de dataset y recurso. Tiene que aceptar el parámetro `?referencia=<url>`, que el theme agrega con la URL del dataset o recurso | datosgobar: formulario de Datos Abiertos; apn: el aviso no se muestra |
 
+| `CKANEXT__GOBAR_THEME__CONTACT_ADDRESS` | Dirección postal, en el footer debajo del texto de marca | vacío (no se muestra) |
+| `CKANEXT__GOBAR_THEME__CONTACT_PHONE` | Teléfono, como link `tel:` | vacío (no se muestra) |
+| `CKANEXT__GOBAR_THEME__CONTACT_EMAIL` | Correo, como link `mailto:` | vacío (no se muestra) |
+
 ```
 CKANEXT__GOBAR_THEME__CONTACT_URL=mailto:datospublicos@magyp.gob.ar
 CKANEXT__GOBAR_THEME__REPORT_URL=https://www.magyp.gob.ar/contacto
+CKANEXT__GOBAR_THEME__CONTACT_ADDRESS=Av. Ejemplo 1234, CABA
+CKANEXT__GOBAR_THEME__CONTACT_PHONE=+54 11 0000-0000
+CKANEXT__GOBAR_THEME__CONTACT_EMAIL=datospublicos@magyp.gob.ar
 ```
 
 ---
@@ -191,7 +201,7 @@ CKANEXT__GOBAR_THEME__REPORT_URL=https://www.magyp.gob.ar/contacto
 | `institutional_name` | vacío (en datosgobar, "Dirección de Datos Abiertos") | Texto del link institucional |
 | `institutional_url` | vacío (en datosgobar, argentina.gob.ar/datos-abiertos) | URL de ese link |
 | `show_secretariat_logo` | `auto` (`true`\|`false`\|`auto`) | Logo de la esquina inferior derecha. En `auto` se oculta en `apn`, salvo que se configure `footer_logo_path` |
-| `footer_logo_path` | vacío (logo de la Secretaría de Innovación) | Logo propio: URL absoluta o ruta dentro de `public/` del theme |
+| `footer_logo_path` | vacío (logo de la Secretaría de Innovación) | Escudo o logo propio del organismo: URL absoluta o ruta dentro de `public/` del theme. Va sobre el fondo oscuro del footer |
 | `secretariat_logo_alt` | `Secretaría de Innovación, Ciencia y Tecnología` | Texto alternativo de ese logo |
 
 ```
@@ -225,6 +235,9 @@ CKANEXT__GOBAR_THEME__SUBTITLE=Datos del sector agropecuario y sus temas relacio
 CKANEXT__GOBAR_THEME__CONTACT_URL=mailto:datospublicos@magyp.gob.ar
 CKANEXT__GOBAR_THEME__INSTITUTIONAL_NAME=Ministerio de Agricultura, Ganadería y Pesca
 CKANEXT__GOBAR_THEME__INSTITUTIONAL_URL=https://www.magyp.gob.ar
+CKANEXT__GOBAR_THEME__CONTACT_ADDRESS=Av. Ejemplo 1234, CABA
+CKANEXT__GOBAR_THEME__CONTACT_PHONE=+54 11 0000-0000
+CKANEXT__GOBAR_THEME__FOOTER_LOGO_PATH=https://www.magyp.gob.ar/logos/escudo-blanco.png
 # Opcional: colores propios (si no, Poncho)
 # CKANEXT__GOBAR_THEME__COLOR_BRAND=#00703C
 ```
@@ -243,7 +256,7 @@ El theme viejo (`portal-andino-theme`) se configuraba desde un panel
 | Imagen de fondo de la portada | `HERO_BACKGROUND_IMAGE` |
 | Logo del encabezado | `CKAN__SITE_LOGO` |
 | Logo del pie | `FOOTER_LOGO_PATH` (el logo no es link) |
-| Mail de contacto | `CONTACT_URL` (`mailto:`) |
+| Mail de contacto | `CONTACT_URL` (`mailto:`) o `CONTACT_EMAIL`; también `CONTACT_ADDRESS` y `CONTACT_PHONE` |
 | Acerca (título y descripción) | `CKAN__SITE_ABOUT` |
 | Google Analytics / Tag Manager | `CKAN___GOOGLEANALYTICS__ID` (ckanext-googleanalytics) |
 | Licencias | `CKAN___LICENSES_GROUP_URL` (nativo; triple `_` porque la clave no lleva prefijo `ckan.`) |
@@ -265,9 +278,10 @@ El theme viejo (`portal-andino-theme`) se configuraba desde un panel
   home se guardan en la base de datos de cada grupo (`image_url`) como PNG
   índigo, así que no cambian con el perfil. Un portal `apn` tiene que cargar
   imágenes propias o neutras en cada tema.
-- **Plugins por perfil:** un portal `apn` sin harvest ni series tiene que
-  editar `CKAN__PLUGINS` a mano en el `.env`; no hay un preset por perfil en
-  el stack.
+- **Plugins por perfil:** un portal `apn` no lleva series (el theme oculta
+  la sección aunque el plugin esté cargado) y en general tampoco harvest, pero
+  tiene que sacar `series_explorer` (y los harvesters) de `CKAN__PLUGINS` a
+  mano en el `.env`; no hay un preset por perfil en el stack.
 - `public/vendor/poncho/` está vendorizado y no se usa (el theme toma de
   Poncho solo los valores de color y tipografía).
 

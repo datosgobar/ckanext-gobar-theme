@@ -483,6 +483,17 @@ def gobar_contact_url() -> str:
     return "" if gobar_is_apn() else DATOSGOBAR_CONTACT_URL
 
 
+def gobar_footer_contact() -> dict[str, str]:
+    """Dirección, teléfono y correo del organismo para el footer; vacíos
+    por defecto en los dos perfiles."""
+    return {
+        field: str(
+            toolkit.config.get(f"ckanext.gobar_theme.contact_{field}", "") or ""
+        ).strip()
+        for field in ("address", "phone", "email")
+    }
+
+
 def gobar_report_url(ref: str) -> str:
     """URL del aviso "Reportar un problema" con ``ref`` (URL del dataset o
     recurso) en el parámetro ``referencia``, o "" si no hay formulario
@@ -608,6 +619,7 @@ def get_helpers() -> dict[str, Any]:
         "gobar_site_logo": gobar_site_logo,
         "gobar_site_description": gobar_site_description,
         "gobar_contact_url": gobar_contact_url,
+        "gobar_footer_contact": gobar_footer_contact,
         "gobar_report_url": gobar_report_url,
         "gobar_site_about": gobar_site_about,
         "gobar_show_recursos": gobar_show_recursos,

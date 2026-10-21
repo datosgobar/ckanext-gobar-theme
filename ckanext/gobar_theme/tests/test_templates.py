@@ -79,3 +79,15 @@ def test_metadatos_oculta_vacios_y_pliega_mas():
     principal, _, plegado = html.partition('<details')
     assert 'Id' not in principal and '<dt>Id</dt>' in plegado
     assert ' open' not in plegado.split('>')[0]
+
+
+def test_footer_contacto_muestra_solo_lo_configurado():
+    env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader(TEMPLATES_DIR), autoescape=True)
+    tpl = env.get_template('snippets/footer_contacto.html')
+    vacio = {'address': '', 'phone': '', 'email': ''}
+    assert '<address' not in tpl.render(contacto=vacio)
+    html = tpl.render(contacto=dict(vacio, phone='+54 11 4000-0000', email='datos@org.gob.ar'))
+    assert 'href="tel:+54114000-0000"' in html
+    assert 'href="mailto:datos@org.gob.ar"' in html
+    assert '<span>' not in html

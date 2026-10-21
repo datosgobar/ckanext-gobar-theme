@@ -2,8 +2,10 @@
 
 {% block footer_content %}
   <div class="gobar-footer-grid">
-    {# Marca: mismo logo que el header (h.gobar_site_logo) y el texto de
-       ckan.site_description o, en datosgobar, el de datos.gob.ar. #}
+    {# Marca: mismo logo que el header (h.gobar_site_logo), el texto de
+       ckan.site_description o, en datosgobar, el de datos.gob.ar, y los datos
+       de contacto del organismo. Sin logo no se repite el título como texto
+       (en apn quedaba "Datos Argentina" o el nombre del portal duplicado). #}
     {% set site_logo = h.gobar_site_logo() %}
     {% set site_title = h.gobar_get_config('ckan.site_title', 'Portal de datos') %}
     {% set site_description = h.gobar_site_description() %}
@@ -11,12 +13,11 @@
       {% if site_logo %}
       <img src="{{ site_logo }}"
            alt="{{ site_title }}" />
-      {% else %}
-      <p class="gobar-logo-texto">{{ site_title }}</p>
       {% endif %}
       {% if site_description %}
       <p>{{ site_description }}</p>
       {% endif %}
+      {% snippet "snippets/footer_contacto.html", contacto=h.gobar_footer_contact() %}
     </div>
     <div>
       <h3>Explorar</h3>
@@ -24,7 +25,7 @@
         <li><a href="{{ h.url_for('dataset.search') }}">Datasets</a></li>
         <li><a href="{{ h.url_for('organization.index') }}">{{ h.gobar_organizations_label() }}</a></li>
         <li><a href="{{ h.url_for('group.index') }}">Temas</a></li>
-        {% if h.plugin_loaded('series_explorer') %}
+        {% if h.plugin_loaded('series_explorer') and not h.gobar_is_apn() %}
         <li><a href="{{ h.url_for('series.series') }}">Series de tiempo</a></li>
         {% endif %}
       </ul>

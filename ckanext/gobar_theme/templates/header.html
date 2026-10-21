@@ -35,7 +35,7 @@
     <a class="nav-link" href="{{ h.url_for('recursos.recursos') }}">Recursos</a>
   </li>
   {% endif %}
-  {% if h.plugin_loaded('series_explorer') %}
+  {% if h.plugin_loaded('series_explorer') and not h.gobar_is_apn() %}
   <li class="nav-item{% if '/series' in request.path %} active{% endif %}">
     <a class="nav-link" href="{{ h.url_for('series.series') }}">Series</a>
   </li>

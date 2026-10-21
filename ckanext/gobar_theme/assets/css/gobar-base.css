@@ -460,7 +460,7 @@ a.tag:hover, a.tag:focus-visible { background: var(--gobar-surface-tint); border
 
 /* ── Logo como texto (perfil apn sin ckan.site_logo) ── */
 .masthead .logo .gobar-logo-texto { font-family: var(--font-titulos); font-size: 20px; font-weight: 700; color: var(--gobar-blanco); line-height: 36px; white-space: nowrap; }
-.gobar-footer-brand .gobar-logo-texto { font-family: var(--font-titulos); font-size: 20px; font-weight: 700; color: var(--gobar-blanco); margin-bottom: 8px; }
+.gobar-footer-contacto { display: flex; flex-direction: column; gap: 6px; margin: 14px 0 0; font-style: normal; line-height: 1.55; }
 
 /* ── Placeholder de organismo sin logo ──
    CKAN usa /base/images/placeholder-organization.png (el theme lo reemplaza

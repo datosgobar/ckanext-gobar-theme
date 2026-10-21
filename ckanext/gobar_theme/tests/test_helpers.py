@@ -209,6 +209,13 @@ def test_contacto_y_descripcion_por_perfil(monkeypatch):
     assert helpers.gobar_site_description() == "Portal del organismo"
 
 
+def test_footer_contact_vacio_por_defecto(monkeypatch):
+    _config(monkeypatch, profile="apn")
+    assert helpers.gobar_footer_contact() == {"address": "", "phone": "", "email": ""}
+    _config(monkeypatch, **{"profile": "apn", "contact_email": " datos@org.gob.ar "})
+    assert helpers.gobar_footer_contact()["email"] == "datos@org.gob.ar"
+
+
 def test_site_logo_por_perfil(monkeypatch):
     monkeypatch.setattr(helpers.toolkit.h, "url_for_static", lambda p: "/static/" + p.lstrip("/"), raising=False)
     _config(monkeypatch, **{"profile": "datosgobar", "ckan.site_logo": helpers.CKAN_DEFAULT_LOGO})

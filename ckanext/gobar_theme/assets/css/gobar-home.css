@@ -23,7 +23,7 @@ body.theme-profile-apn .gobar-hero h1 { margin-bottom: 32px; }
 
 /* ── Buscador hero ── */
 .gobar-search { max-width: 600px; width: 100%; margin: 0 auto 44px; }
-.gobar-search .input-group { background: var(--gobar-blanco); border: 2px solid var(--gobar-primary); border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px var(--gobar-shadow-tint); }
+.gobar-search .input-group { background: var(--gobar-blanco); border: 2px solid var(--gobar-brand); border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px var(--gobar-shadow-tint); }
 .gobar-search .input-group:focus-within { box-shadow: 0 0 0 3px var(--gobar-focus-ring); }
 .gobar-search .form-control { background: transparent!important; border: none!important; color: var(--gobar-heading)!important; font-family: var(--font-cuerpo); font-size: 15px; padding: 13px 16px; height: auto; box-shadow: none!important; }
 .gobar-search .form-control::placeholder { color: var(--gobar-gris); }
@@ -33,7 +33,7 @@ body.theme-profile-apn .gobar-hero h1 { margin-bottom: 32px; }
 /* ── Counters ── */
 .gobar-counters { display: flex; gap: clamp(28px, 5vw, 64px); align-items: flex-start; justify-content: center; }
 .gobar-counter { text-align: center; }
-.gobar-counter-number { font-family: var(--font-cuerpo); font-size: clamp(32px, 3.4vw, 43px); font-weight: 800; color: var(--gobar-primary); line-height: 1; letter-spacing: -.02em; }
+.gobar-counter-number { font-family: var(--font-cuerpo); font-size: clamp(32px, 3.4vw, 43px); font-weight: 800; color: var(--gobar-brand); line-height: 1; letter-spacing: -.02em; }
 .gobar-counter-number .plus { color: var(--gobar-accent); font-weight: 400; }
 .gobar-counter-label { font-family: var(--font-cuerpo); font-size: 14px; color: var(--gobar-heading); font-weight: 500; margin-top: 8px; }
 

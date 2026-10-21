@@ -158,6 +158,11 @@ class GobarThemePlugin(plugins.SingletonPlugin, DefaultTranslation):
         # muestran.
         declaration.declare(key.ckanext.gobar_theme.contact_url, "")
         declaration.declare(key.ckanext.gobar_theme.report_url, "")
+        # Datos de contacto del organismo en el footer, debajo del texto de
+        # marca. Vacíos: no se muestran.
+        declaration.declare(key.ckanext.gobar_theme.contact_address, "")
+        declaration.declare(key.ckanext.gobar_theme.contact_phone, "")
+        declaration.declare(key.ckanext.gobar_theme.contact_email, "")
         declaration.declare(key.ckanext.gobar_theme.hero_background_image, "")
         # Logo institucional del pie: vacío = usa el logo de la Secretaría
         # de Innovación (el del portal nacional). true|false|auto (default):
