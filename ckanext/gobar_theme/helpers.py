@@ -140,6 +140,21 @@ def gobar_dedupe_top_nodes(top_nodes: list[dict]) -> list[dict]:
     return [n for n in top_nodes if n.get("name") not in child_names]
 
 
+def gobar_org_tree_prune(nodes: list[dict[str, Any]], names: set[str]) -> list[dict[str, Any]]:
+    """Deja del árbol solo los organismos de ``names`` y sus ancestros.
+
+    Los ancestros se conservan como contexto (la búsqueda "aduana" muestra
+    Economía › AFIP › Aduana); los hijos de un organismo que coincide y que
+    no coinciden se descartan. Devuelve copias: no toca el árbol original.
+    """
+    podado = []
+    for node in nodes:
+        hijos = gobar_org_tree_prune(node.get("children") or [], names)
+        if node.get("name") in names or hijos:
+            podado.append(dict(node, children=hijos))
+    return podado
+
+
 def gobar_org_root_page(q: str | None = None):
     """Página del árbol de organismos, paginada por RAÍCES.
 
@@ -159,12 +174,14 @@ def gobar_org_root_page(q: str | None = None):
         toolkit.h.group_tree(type_="organization")
     )
     if q:
-        # Marca las coincidencias sobre el árbol completo (no sobre la página
-        # de core, que solo traía las primeras N).
+        # Busca sobre el árbol completo (no sobre la página de core, que solo
+        # traía las primeras N), resalta las coincidencias y poda el resto:
+        # antes solo resaltaba y la búsqueda devolvía todos los organismos.
         matches = toolkit.get_action("organization_list")(
             {"ignore_auth": True}, {"q": q}
         )
         toolkit.h.group_tree_highlight([{"name": n} for n in matches], top_nodes)
+        top_nodes = gobar_org_tree_prune(top_nodes, set(matches))
 
     return Page(
         collection=top_nodes,

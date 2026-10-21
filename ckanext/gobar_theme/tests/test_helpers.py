@@ -224,3 +224,26 @@ def test_site_logo_por_perfil(monkeypatch):
     assert helpers.gobar_site_logo() == ""
     _config(monkeypatch, **{"profile": "apn", "ckan.site_logo": "https://org.gob.ar/logo.svg"})
     assert helpers.gobar_site_logo() == "https://org.gob.ar/logo.svg"
+
+
+def test_org_tree_prune_deja_coincidencias_y_ancestros():
+    top_nodes, _ = _tree()
+    podado = helpers.gobar_org_tree_prune(top_nodes, {"aduana"})
+    assert [n["name"] for n in podado] == ["economia"]
+    economia = podado[0]
+    assert [n["name"] for n in economia["children"]] == ["afip"]
+    assert [n["name"] for n in economia["children"][0]["children"]] == ["aduana"]
+
+
+def test_org_tree_prune_descarta_hijos_que_no_coinciden():
+    top_nodes, _ = _tree()
+    podado = helpers.gobar_org_tree_prune(top_nodes, {"economia", "salud"})
+    assert [n["name"] for n in podado] == ["economia", "salud"]
+    assert podado[0]["children"] == []
+
+
+def test_org_tree_prune_sin_coincidencias_y_sin_mutar():
+    top_nodes, by_name = _tree()
+    assert helpers.gobar_org_tree_prune(top_nodes, {"no_existe"}) == []
+    helpers.gobar_org_tree_prune(top_nodes, {"aduana"})
+    assert len(by_name["economia"]["children"]) == 2
