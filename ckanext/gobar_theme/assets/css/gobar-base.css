@@ -366,16 +366,18 @@ a.tag:hover, a.tag:focus-visible { background: #F5F3FD; border-color: var(--goba
 .resources .nav-simple > li.active > a { color: var(--gobar-primary); font-weight: 600; background: #F5F3FD; box-shadow: inset 3px 0 0 var(--gobar-primary); }
 .resources .nav-simple > li.active > a::before, .resources .nav-simple > li.active > a::after { display: none; }
 
-/* ── URL del recurso con botón "Copiar" ──
-   En línea, sin recuadro: rótulo, link recortado y "Copiar" como botón de
-   texto (sin borde ni fondo hasta el hover). */
+/* ── URL del recurso con ícono para copiarla ──
+   En línea, sin recuadro: rótulo, link recortado y, pegado al link, un
+   ícono-botón (el texto queda para lectores de pantalla y como tooltip).
+   Al copiar, el ícono pasa a ✓ verde. */
 .gobar-res-url { display: flex; align-items: center; gap: 8px; margin: 4px 0 16px; font-size: 14px; }
 .gobar-res-url-label { flex: none; color: var(--gobar-gris-oscuro); }
 .gobar-res-url-link { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--gobar-primary); }
-.gobar-copiar { flex: none; display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; font-size: 13px; font-weight: 600; color: var(--gobar-primary); background: none; border: 0; border-radius: 6px; cursor: pointer; }
+.gobar-copiar { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; margin-left: -4px; padding: 0; font-size: 14px; color: var(--gobar-primary); background: none; border: 0; border-radius: 6px; cursor: pointer; }
 .gobar-copiar:hover { background: #F5F3FD; }
 .gobar-copiar:focus-visible { outline: 2px solid var(--gobar-primary); outline-offset: 1px; }
 .gobar-copiar.is-copiado { color: var(--gobar-verde); }
+.gobar-copiar.is-copiado .fa-copy::before { content: "\f00c"; }  /* fa-check */
 
 /* ── Página del recurso: "Ir al recurso" alineado con el título ──
    Core sube las acciones con top: -10px y el botón quedaba más alto que la

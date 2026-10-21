@@ -41,7 +41,7 @@
 {% endblock %}
 
 {#
-  URL del recurso con botón "Copiar" al lado (core: "URL: <link>" suelto,
+  URL del recurso con un ícono para copiarla pegado al link (core: "URL: <link>" suelto,
   que solo se podía copiar con click derecho). Conserva la clase
   resource-url-analytics que usa googleanalytics para contar las descargas.
 #}
@@ -50,8 +50,8 @@
     <div class="gobar-res-url">
       <span class="gobar-res-url-label">{{ _('URL:') }}</span>
       <a class="resource-url-analytics gobar-res-url-link" href="{{ res.url }}" title="{{ res.url }}">{{ res.url }}</a>
-      <button type="button" class="gobar-copiar" data-gobar-copiar="{{ res.url }}" data-copiado="{{ _('Copiada') }}" aria-label="{{ _('Copiar la URL del recurso') }}">
-        <i class="fa fa-copy" aria-hidden="true"></i> <span class="gobar-copiar-label" aria-live="polite">{{ _('Copiar') }}</span>
+      <button type="button" class="gobar-copiar" data-gobar-copiar="{{ res.url }}" data-copiado="{{ _('URL copiada') }}" title="{{ _('Copiar la URL del recurso') }}">
+        <i class="fa fa-copy" aria-hidden="true"></i><span class="gobar-copiar-label visually-hidden" aria-live="polite">{{ _('Copiar la URL del recurso') }}</span>
       </button>
     </div>
   {% else %}
