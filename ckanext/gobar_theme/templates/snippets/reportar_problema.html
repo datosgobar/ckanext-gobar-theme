@@ -1,10 +1,15 @@
 {#
-  Aviso "Reportar un problema": abre el formulario de contacto de Datos
-  Abiertos con el campo Referencia precompletado con `ref` (URL absoluta del
-  dataset o recurso). El formulario corta Referencia en 128 caracteres.
+  Aviso "Reportar un problema": abre el formulario de contacto con el campo
+  Referencia precompletado con `ref` (URL absoluta del dataset o recurso).
+  El formulario sale de h.gobar_report_url: en datosgobar, el de Datos
+  Abiertos (que corta Referencia en 128 caracteres); en apn, el que
+  configure el organismo (report_url) o ninguno, y entonces no se muestra.
 #}
+{% set report_url = h.gobar_report_url(ref) %}
+{% if report_url %}
 <aside class="gobar-reportar">
   <i class="fa fa-flag gobar-reportar-icon" aria-hidden="true"></i>
   <span class="gobar-reportar-texto">{{ _('¿Encontraste un error o un dato desactualizado?') }}</span>
-  <a href="https://www.argentina.gob.ar/datos-abiertos/contacto?referencia={{ ref | urlencode }}" target="_blank" rel="noopener">{{ _('Reportar un problema') }} <span aria-hidden="true">→</span></a>
+  <a href="{{ report_url }}" target="_blank" rel="noopener">{{ _('Reportar un problema') }} <span aria-hidden="true">→</span></a>
 </aside>
+{% endif %}

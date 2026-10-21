@@ -69,6 +69,9 @@
     organismos nacionales, desarrollamos y ponemos a disposición los
     siguientes productos.
   </p>
+  {% elif h.gobar_site_about() %}
+  {# Perfil apn con texto propio del organismo (ckan.site_about, markdown). #}
+  {{ h.render_markdown(h.gobar_site_about()) }}
   {% else %}
   <h2>Portal Andino</h2>
 

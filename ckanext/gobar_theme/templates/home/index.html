@@ -129,13 +129,15 @@
   </div>
 </section>
 
-{# ── DATASETS MÁS CONSULTADOS ── #}
+{# ── DATASETS ACTUALIZADOS RECIENTEMENTE ──
+   gobar_featured_datasets ordena por metadata_modified (no por visitas):
+   el rótulo dice eso. Cantidad: ckanext.gobar_theme.featured_datasets_limit. #}
 <section class="gobar-featured">
   <div class="container">
     <div class="gobar-section-header">
       <div>
         <div class="gobar-section-label">Destacados</div>
-        <h2 class="gobar-section-title">Los más consultados</h2>
+        <h2 class="gobar-section-title">Actualizados recientemente</h2>
       </div>
       <a href="{{ h.url_for('dataset.search') }}" class="gobar-section-link">
         Ver los {{ h.gobar_dataset_count() }} datasets →
@@ -143,7 +145,7 @@
     </div>
 
     <div class="gobar-featured-grid">
-      {% set recent_pkgs = h.gobar_featured_datasets(6) %}
+      {% set recent_pkgs = h.gobar_featured_datasets() %}
       {% if recent_pkgs %}
         {% for pkg in recent_pkgs %}
           <a href="{{ h.url_for('dataset.read', id=pkg.name) }}"
@@ -197,8 +199,9 @@
             <img src="{{ org.image_display_url }}"
                  alt="{{ org.display_name }}" class="gobar-org-logo" />
           {% else %}
-            <img src="{{ h.url_for_static('images/institucion.svg') }}"
-                 alt="" class="gobar-org-logo" />
+            {# Ícono genérico pintado con el color de marca del perfil (máscara
+               CSS): como <img> el SVG quedaba índigo en todos los perfiles. #}
+            <span class="gobar-org-logo gobar-org-logo-generico" aria-hidden="true"></span>
           {% endif %}
           <div class="gobar-org-name">{{ org.display_name }}</div>
           <div class="gobar-org-count">{{ org.package_count }} datasets</div>
@@ -219,10 +222,10 @@
   <div class="container">
     <div>
       <div class="gobar-section-label">Para desarrolladores</div>
-      <h2>Todo el catálogo, también por API</h2>
-      <p>Cada dataset de este portal se puede consultar de forma programática, sin claves ni límites para uso razonable.</p>
+      <h2>Todo el catálogo público, también por API</h2>
+      <p>Los datasets públicos de este portal se pueden consultar de forma programática y sin registrarse.</p>
     </div>
-    <a class="gobar-api-btn" href="https://docs.ckan.org/en/2.11/api/">Ver la documentación</a>
+    <a class="gobar-api-btn" href="https://datosgobar.github.io/guias-andino/uso/desarrolladores/">Ver la documentación</a>
   </div>
 </section>
 {% endblock %}

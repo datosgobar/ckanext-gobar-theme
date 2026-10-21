@@ -1,0 +1,9 @@
+{# Datos de contacto del organismo en el footer (contact_address,
+   contact_phone, contact_email). No se renderiza si no hay ninguno. #}
+{% if contacto.address or contacto.phone or contacto.email %}
+<address class="gobar-footer-contacto">
+  {% if contacto.address %}<span>{{ contacto.address }}</span>{% endif %}
+  {% if contacto.phone %}<a href="tel:{{ contacto.phone|replace(' ', '') }}">{{ contacto.phone }}</a>{% endif %}
+  {% if contacto.email %}<a href="mailto:{{ contacto.email }}">{{ contacto.email }}</a>{% endif %}
+</address>
+{% endif %}
