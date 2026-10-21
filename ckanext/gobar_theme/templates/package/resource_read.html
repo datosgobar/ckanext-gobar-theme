@@ -41,32 +41,38 @@
 {% endblock %}
 
 {#
-  URL del recurso: la misma línea "URL: <link>" de core, recortada con "…"
-  dentro de su ancho (el link largo desbordaba la página en mobile).
+  URL del recurso: no se muestra en la cabecera. Se ve y se copia desde el
+  botón "URL ▾" junto a "Ir al recurso" (ver resource_actions_inner). Si la
+  URL no es un link válido, queda el texto plano de core.
 #}
 {% block resource_read_url %}
-  {% if res.url and h.is_url(res.url) %}
-    <p class="gobar-res-url">
-      <span class="gobar-res-url-label">{{ _('URL:') }}</span>
-      <a class="resource-url-analytics gobar-res-url-link" href="{{ res.url }}" title="{{ res.url }}">{{ res.url }}</a>
-    </p>
-  {% else %}
+  {% if not (res.url and h.is_url(res.url)) %}
     {{ super() }}
   {% endif %}
 {% endblock %}
 
 {#
-  "Copiar URL" junto a "Ir al recurso": antes la URL solo se podía copiar
-  con click derecho. Conserva la clase resource-url-analytics del link de
-  core (googleanalytics cuenta las descargas con ella).
+  Botón "URL ▾" junto a "Ir al recurso": abre un menú con la URL completa
+  (seleccionable) y "Copiar URL". Antes la URL era un link largo recortado
+  que solo se podía copiar con click derecho.
+  data-bs-display="static" + dropdown-menu-start/-sm-end: en mobile el menú
+  abre alineado a la izquierda del botón (las acciones van debajo del
+  título); desde sm, alineado a la derecha.
 #}
 {% block resource_actions_inner %}
   {{ super() }}
   {% if res.url and h.is_url(res.url) %}
-    <li>
-      <button type="button" class="btn gobar-copiar" data-gobar-copiar="{{ res.url }}" data-copiado="{{ _('URL copiada') }}">
-        <i class="fa fa-copy" aria-hidden="true"></i> <span class="gobar-copiar-label" aria-live="polite">{{ _('Copiar URL') }}</span>
+    <li class="dropdown">
+      <button type="button" class="btn gobar-url-toggle dropdown-toggle" data-bs-toggle="dropdown" data-bs-display="static" data-bs-auto-close="outside" aria-expanded="false">
+        <i class="fa fa-link" aria-hidden="true"></i> {{ _('URL') }}
       </button>
+      <div class="dropdown-menu dropdown-menu-start dropdown-menu-sm-end gobar-url-menu">
+        <div class="gobar-url-menu-titulo">{{ _('URL del recurso') }}</div>
+        <p class="gobar-url-menu-url">{{ res.url }}</p>
+        <button type="button" class="btn gobar-copiar" data-gobar-copiar="{{ res.url }}" data-copiado="{{ _('URL copiada') }}">
+          <i class="fa fa-copy" aria-hidden="true"></i> <span class="gobar-copiar-label" aria-live="polite">{{ _('Copiar URL') }}</span>
+        </button>
+      </div>
     </li>
   {% endif %}
 {% endblock %}

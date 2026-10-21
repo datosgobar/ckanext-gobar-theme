@@ -366,18 +366,24 @@ a.tag:hover, a.tag:focus-visible { background: #F5F3FD; border-color: var(--goba
 .resources .nav-simple > li.active > a { color: var(--gobar-primary); font-weight: 600; background: #F5F3FD; box-shadow: inset 3px 0 0 var(--gobar-primary); }
 .resources .nav-simple > li.active > a::before, .resources .nav-simple > li.active > a::after { display: none; }
 
-/* ── URL del recurso (línea informativa) ── */
-.gobar-res-url { display: flex; gap: 6px; margin: 4px 0 16px; font-size: 14px; }
-.gobar-res-url-label { flex: none; color: var(--gobar-gris-oscuro); }
-.gobar-res-url-link { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--gobar-primary); }
-
-/* ── "Copiar URL" junto a "Ir al recurso": outline índigo, como "Explorar".
-   Al copiar pasa a verde con ✓ y "URL copiada" por 2 segundos. */
-.gobar-copiar { display: inline-flex; align-items: center; gap: 6px; color: var(--gobar-primary); background: var(--gobar-blanco); border: 1px solid var(--gobar-primary); font-weight: 600; }
-.gobar-copiar:hover { background: #F5F3FD; color: var(--gobar-primary); border-color: var(--gobar-primary); }
-.gobar-copiar:focus-visible { outline: 0; box-shadow: 0 0 0 3px rgba(57, 55, 147, .25); }
+/* ── Botón "URL ▾" y su menú (página del recurso) ──
+   Outline índigo como "Explorar", a la misma altura que "Ir al recurso".
+   El menú muestra la URL completa, seleccionable, y "Copiar URL", que al
+   copiar pasa a verde con ✓ y "URL copiada" por 2 segundos. */
+.gobar-url-toggle, .gobar-copiar { display: inline-flex; align-items: center; gap: 6px; color: var(--gobar-primary); background: var(--gobar-blanco); border: 1px solid var(--gobar-primary); font-weight: 600; }
+.gobar-url-toggle:hover, .gobar-url-toggle.show, .gobar-copiar:hover { background: #F5F3FD; color: var(--gobar-primary); border-color: var(--gobar-primary); }
+.gobar-url-toggle:focus-visible, .gobar-copiar:focus-visible { outline: 0; box-shadow: 0 0 0 3px rgba(57, 55, 147, .25); }
 .gobar-copiar.is-copiado, .gobar-copiar.is-copiado:hover { color: var(--gobar-verde); border-color: var(--gobar-verde); background: var(--gobar-blanco); }
 .gobar-copiar.is-copiado .fa-copy::before { content: "\f00c"; }  /* fa-check */
+.gobar-url-menu { width: min(460px, calc(100vw - 32px)); padding: 12px 14px; margin-top: 6px !important; border-color: #E4E2F0; box-shadow: 0 6px 20px rgba(33, 45, 81, .12); }
+.gobar-url-menu-titulo { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--gobar-gris-oscuro); }
+.gobar-url-menu-url { margin: 4px 0 12px; font-size: 13px; color: var(--gobar-negro); overflow-wrap: anywhere; user-select: all; }
+/* Mobile: el menú se ancla a la fila de acciones (no al botón, que queda
+   corrido a la derecha de "Ir al recurso") y ocupa todo su ancho. */
+@media (max-width: 575.98px) {
+  .module-resource .actions li.dropdown { position: static; }
+  .gobar-url-menu { left: 0 !important; right: 0 !important; width: auto; }
+}
 
 /* ── Página del recurso: "Ir al recurso" alineado con el título ──
    Core sube las acciones con top: -10px y el botón quedaba más alto que la
