@@ -45,20 +45,21 @@ def test_no_trunca_titulos(path):
             'el override volvió a cortar el nombre con truncate'
 
 
-def test_reportar_problema_codifica_referencia():
-    """El aviso arma ?referencia=<url>: la URL tiene que ir codificada para
-    que un '&' o un '#' no corten la query del formulario de contacto."""
-    from urllib.parse import parse_qs, urlparse
+def test_reportar_problema_usa_url_del_helper_y_se_oculta_sin_ella():
+    """El aviso toma la URL de h.gobar_report_url (que arma ?referencia=
+    codificada, ver test_helpers) y no se renderiza si no hay formulario
+    (perfil apn sin report_url)."""
+    from types import SimpleNamespace
     env = jinja2.Environment(
         loader=jinja2.FileSystemLoader(TEMPLATES_DIR), autoescape=True)
     env.globals['_'] = lambda s: s
-    ref = 'https://datos.gob.ar/dataset/x/resource/y?a=1&b=2#frag'
-    html = env.get_template('snippets/reportar_problema.html').render(ref=ref)
+    tpl = env.get_template('snippets/reportar_problema.html')
+    url = 'https://form.example/?referencia=https%3A%2F%2Fx%3Fa%3D1%26b%3D2'
+    html = tpl.render(ref='x', h=SimpleNamespace(gobar_report_url=lambda ref: url))
     href = re.search(r'href="([^"]+)"', html).group(1).replace('&amp;', '&')
-    url = urlparse(href)
-    assert url.netloc == 'www.argentina.gob.ar'
-    assert url.path == '/datos-abiertos/contacto'
-    assert parse_qs(url.query) == {'referencia': [ref]}
+    assert href == url
+    sin = tpl.render(ref='x', h=SimpleNamespace(gobar_report_url=lambda ref: ''))
+    assert 'gobar-reportar' not in sin
 
 
 def test_metadatos_oculta_vacios_y_pliega_mas():

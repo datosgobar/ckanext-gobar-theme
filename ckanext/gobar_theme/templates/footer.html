@@ -2,12 +2,21 @@
 
 {% block footer_content %}
   <div class="gobar-footer-grid">
+    {# Marca: mismo logo que el header (h.gobar_site_logo) y el texto de
+       ckan.site_description o, en datosgobar, el de datos.gob.ar. #}
+    {% set site_logo = h.gobar_site_logo() %}
+    {% set site_title = h.gobar_get_config('ckan.site_title', 'Portal de datos') %}
+    {% set site_description = h.gobar_site_description() %}
     <div class="gobar-footer-brand">
-      <img src="{{ h.url_for_static('images/Logo_datos-gob-ar_Blanco.png') }}"
-           alt="datos.gob.ar" />
-      <p>Portal de datos abiertos de la República Argentina. Los datos
-         publicados acá son públicos y se pueden reutilizar libremente
-         citando la fuente.</p>
+      {% if site_logo %}
+      <img src="{{ site_logo }}"
+           alt="{{ site_title }}" />
+      {% else %}
+      <p class="gobar-logo-texto">{{ site_title }}</p>
+      {% endif %}
+      {% if site_description %}
+      <p>{{ site_description }}</p>
+      {% endif %}
     </div>
     <div>
       <h3>Explorar</h3>
@@ -38,7 +47,10 @@
         {% if h.gobar_institutional_name() %}
         <li><a href="{{ h.gobar_institutional_url() }}">{{ h.gobar_institutional_name() }}</a></li>
         {% endif %}
-        <li><a href="https://www.argentina.gob.ar/datos-abiertos/contacto">Contacto</a></li>
+        {% set contact_url = h.gobar_contact_url() %}
+        {% if contact_url %}
+        <li><a href="{{ contact_url }}">Contacto</a></li>
+        {% endif %}
       </ul>
     </div>
   </div>

@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import logging
+import re
 from datetime import datetime
 from typing import Any
+from urllib.parse import quote
 
 import ckan.plugins.toolkit as toolkit
 import ckan.model as model
@@ -244,8 +246,31 @@ def gobar_get_config(key: str, default: str = "") -> str:
     return toolkit.config.get(key, default)
 
 
+# Perfiles válidos de ckanext.gobar_theme.profile (obligatorio, sin default:
+# plugin.configure() corta el arranque si falta o no es uno de estos).
+#   datosgobar - portal nacional datos.gob.ar (identidad Datos Abiertos)
+#   apn        - portal de un organismo de la Administración Pública
+#                Nacional (Poncho + identidad del organismo)
+PROFILES = ("datosgobar", "apn")
+
+
+def gobar_validate_profile(value: Any) -> str:
+    """Normaliza el perfil (sin espacios, minúsculas: "APN" == "apn") y
+    falla con un mensaje explícito si no es uno de PROFILES."""
+    profile = str(value or "").strip().lower()
+    if profile not in PROFILES:
+        raise ValueError(
+            "ckanext.gobar_theme.profile es obligatorio y debe ser "
+            f"{' o '.join(PROFILES)} (recibido: {value!r}). Configurarlo en el "
+            ".env con CKANEXT__GOBAR_THEME__PROFILE=datosgobar|apn."
+        )
+    return profile
+
+
 def gobar_theme_profile() -> str:
-    return toolkit.config.get("ckanext.gobar_theme.profile", "nacional")
+    return str(
+        toolkit.config.get("ckanext.gobar_theme.profile", "") or ""
+    ).strip().lower()
 
 
 def gobar_is_apn() -> bool:
@@ -253,6 +278,10 @@ def gobar_is_apn() -> bool:
     (templates y helpers) llama a esta función en vez de repetir la
     comparación de string."""
     return gobar_theme_profile() == "apn"
+
+
+def gobar_is_datosgobar() -> bool:
+    return gobar_theme_profile() == "datosgobar"
 
 
 def gobar_show_recursos() -> bool:
@@ -310,20 +339,170 @@ def gobar_secretariat_logo_alt() -> str:
     )
 
 
+_HEX_COLOR = re.compile(r"^#(?:[0-9a-fA-F]{3}){1,2}$")
+
+# Token CSS → (clave nueva, alias viejo). Ver el modelo de color en
+# assets/css/gobar-base.css ("VARIABLES").
+COLOR_TOKENS = {
+    "--gobar-brand": ("color_brand", "color_primary"),
+    "--gobar-brand-dark": ("color_brand_dark", "color_primary_dark"),
+    "--gobar-interactive": ("color_interactive", None),
+    "--gobar-accent": ("color_accent", None),
+}
+
+
+def gobar_color_config() -> dict[str, str]:
+    """Colores configurados por .ini/.env, ya validados.
+
+    Devuelve solo los válidos (#rgb o #rrggbb); los inválidos se ignoran (y
+    plugin.configure() los avisa en el log). Si se configura la marca pero
+    no el color interactivo, los links/botones siguen a la marca: un
+    organismo que pone solo su color institucional no queda con links del
+    preset."""
+    def get(key: str | None) -> str:
+        if not key:
+            return ""
+        return str(
+            toolkit.config.get(f"ckanext.gobar_theme.{key}", "") or ""
+        ).strip()
+
+    colors = {}
+    for token, (key, alias) in COLOR_TOKENS.items():
+        value = get(key) or get(alias)
+        if value and _HEX_COLOR.match(value):
+            colors[token] = value
+    if "--gobar-interactive" not in colors and "--gobar-brand" in colors:
+        colors["--gobar-interactive"] = colors["--gobar-brand"]
+    return colors
+
+
 def gobar_color_overrides_style() -> str:
-    """Construye el atributo style="..." con los overrides de color de
-    .ini/env (vacíos por defecto). Se aplica en el <body> (base.html) en
-    vez de un <style>/:root aparte: un atributo style inline le gana en
-    especificidad a body.theme-profile-* sin necesitar !important."""
-    overrides = {
-        "--gobar-primary": toolkit.config.get("ckanext.gobar_theme.color_primary", ""),
-        "--gobar-primary-dark": toolkit.config.get(
-            "ckanext.gobar_theme.color_primary_dark", ""
-        ),
-        "--gobar-accent": toolkit.config.get("ckanext.gobar_theme.color_accent", ""),
-    }
-    declarations = [f"{prop}: {value};" for prop, value in overrides.items() if value]
-    return " ".join(declarations)
+    """Atributo style="..." del <body> (base.html) con los colores
+    configurados. Va inline en el body porque le gana en especificidad al
+    preset body.theme-profile-* sin !important; los tonos derivados
+    (gobar-base.css, regla "body") se recalculan solos a partir de estos."""
+    return " ".join(
+        f"{token}: {value};" for token, value in gobar_color_config().items()
+    )
+
+
+def _luminance(hex_color: str) -> float:
+    h = hex_color.lstrip("#")
+    if len(h) == 3:
+        h = "".join(c * 2 for c in h)
+    channels = []
+    for i in (0, 2, 4):
+        c = int(h[i:i + 2], 16) / 255
+        channels.append(c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4)
+    r, g, b = channels
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+
+def gobar_contrast_ratio(color_a: str, color_b: str) -> float:
+    """Contraste WCAG 2.x entre dos colores hex (1 a 21)."""
+    la, lb = sorted((_luminance(color_a), _luminance(color_b)), reverse=True)
+    return (la + 0.05) / (lb + 0.05)
+
+
+def gobar_check_colors() -> list[str]:
+    """Advertencias sobre los colores configurados: formato inválido y
+    contraste insuficiente (WCAG AA 4.5:1) contra el blanco, que es el color
+    del texto sobre la marca (header, footer, botones) y el fondo de los
+    links. No corta el arranque: el organismo decide."""
+    warnings = []
+    for token, (key, alias) in COLOR_TOKENS.items():
+        for k in filter(None, (key, alias)):
+            raw = str(toolkit.config.get(f"ckanext.gobar_theme.{k}", "") or "").strip()
+            if raw and not _HEX_COLOR.match(raw):
+                warnings.append(
+                    f"ckanext.gobar_theme.{k}={raw!r} no es un color hex "
+                    "(#rgb o #rrggbb): se ignora."
+                )
+    colors = gobar_color_config()
+    for token, uso in (
+        ("--gobar-brand", "texto blanco sobre el header y los botones"),
+        ("--gobar-brand-dark", "texto blanco sobre el footer"),
+        ("--gobar-interactive", "links sobre fondo blanco"),
+    ):
+        value = colors.get(token)
+        if value:
+            ratio = gobar_contrast_ratio(value, "#FFFFFF")
+            if ratio < 4.5:
+                warnings.append(
+                    f"{token} {value} tiene contraste {ratio:.2f}:1 con el "
+                    f"blanco ({uso}); WCAG AA pide 4.5:1."
+                )
+    return warnings
+
+
+# ── Marca, contacto y "Acerca" por perfil ──
+# datosgobar trae sus defaults fijos (datos.gob.ar); apn arranca vacío y usa
+# la config nativa de CKAN (ckan.site_logo, ckan.site_description,
+# ckan.site_about) o las claves contact_url/report_url del theme.
+
+CKAN_DEFAULT_LOGO = "/base/images/ckan-logo.png"
+DATOSGOBAR_LOGO = "images/Logo_datos-gob-ar_Blanco.png"
+DATOSGOBAR_CONTACT_URL = "https://www.argentina.gob.ar/datos-abiertos/contacto"
+DATOSGOBAR_DESCRIPTION = (
+    "Portal de datos abiertos de la República Argentina. Los datos "
+    "publicados acá son públicos y se pueden reutilizar libremente citando "
+    "la fuente."
+)
+
+
+def gobar_site_logo() -> str:
+    """URL del logo del header y del footer, o "" si no hay (apn sin
+    ckan.site_logo: se muestra el título del portal como texto)."""
+    configured = str(toolkit.config.get("ckan.site_logo", "") or "").strip()
+    if configured == CKAN_DEFAULT_LOGO:
+        configured = ""
+    if not configured:
+        if gobar_is_apn():
+            return ""
+        configured = DATOSGOBAR_LOGO
+    if configured.startswith(("http://", "https://", "//")):
+        return configured
+    return toolkit.h.url_for_static(configured)
+
+
+def gobar_site_description() -> str:
+    """Texto de marca del footer: el de datos.gob.ar o ckan.site_description."""
+    configured = str(toolkit.config.get("ckan.site_description", "") or "").strip()
+    if configured:
+        return configured
+    return "" if gobar_is_apn() else DATOSGOBAR_DESCRIPTION
+
+
+def gobar_contact_url() -> str:
+    """Link "Contacto" del footer; vacío en apn salvo que se configure."""
+    configured = str(
+        toolkit.config.get("ckanext.gobar_theme.contact_url", "") or ""
+    ).strip()
+    if configured:
+        return configured
+    return "" if gobar_is_apn() else DATOSGOBAR_CONTACT_URL
+
+
+def gobar_report_url(ref: str) -> str:
+    """URL del aviso "Reportar un problema" con ``ref`` (URL del dataset o
+    recurso) en el parámetro ``referencia``, o "" si no hay formulario
+    configurado (apn por defecto: el aviso no se muestra). La URL de
+    report_url tiene que aceptar ?referencia=, como el formulario de Datos
+    Abiertos (que corta ese campo en 128 caracteres)."""
+    base = str(
+        toolkit.config.get("ckanext.gobar_theme.report_url", "") or ""
+    ).strip()
+    if not base:
+        if gobar_is_apn():
+            return ""
+        base = DATOSGOBAR_CONTACT_URL
+    sep = "&" if "?" in base else "?"
+    return f"{base}{sep}referencia={quote(ref, safe='')}"
+
+
+def gobar_site_about() -> str:
+    """Texto de "Acerca" del organismo (ckan.site_about, markdown) o ""."""
+    return str(toolkit.config.get("ckan.site_about", "") or "").strip()
 
 
 def gobar_hero_background_style() -> str:
@@ -348,7 +527,7 @@ def gobar_is_spatial_enabled() -> bool:
 def gobar_featured_datasets(limit: int | None = None) -> list[dict[str, Any]]:
     if limit is None:
         limit = toolkit.config.get(
-            "ckanext.gobar_theme.featured_datasets_limit", 4
+            "ckanext.gobar_theme.featured_datasets_limit", 6
         )
     try:
         result = toolkit.get_action("package_search")(
@@ -425,6 +604,12 @@ def get_helpers() -> dict[str, Any]:
         "gobar_get_config": gobar_get_config,
         "gobar_theme_profile": gobar_theme_profile,
         "gobar_is_apn": gobar_is_apn,
+        "gobar_is_datosgobar": gobar_is_datosgobar,
+        "gobar_site_logo": gobar_site_logo,
+        "gobar_site_description": gobar_site_description,
+        "gobar_contact_url": gobar_contact_url,
+        "gobar_report_url": gobar_report_url,
+        "gobar_site_about": gobar_site_about,
         "gobar_show_recursos": gobar_show_recursos,
         "gobar_institutional_name": gobar_institutional_name,
         "gobar_institutional_url": gobar_institutional_url,

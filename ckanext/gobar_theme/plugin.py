@@ -10,6 +10,7 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from ckan.common import CKANConfig
 from ckan.config.declaration import Declaration, Key
+from ckan.exceptions import CkanConfigurationException
 from ckan.lib.plugins import DefaultTranslation
 
 from ckanext.gobar_theme.views import get_blueprints
@@ -59,6 +60,7 @@ def provincias_from_index(pkg_dict: dict[str, Any]) -> list[str]:
 
 class GobarThemePlugin(plugins.SingletonPlugin, DefaultTranslation):
     plugins.implements(plugins.IConfigurer)
+    plugins.implements(plugins.IConfigurable)
     plugins.implements(plugins.IBlueprint)
     plugins.implements(plugins.ITemplateHelpers)
     plugins.implements(plugins.IConfigDeclaration)
@@ -72,9 +74,12 @@ class GobarThemePlugin(plugins.SingletonPlugin, DefaultTranslation):
         toolkit.add_public_directory(config_, "public")
         # CORREGIDO: apunta a 'assets' donde está webassets.yml
         toolkit.add_resource("assets", "gobar_theme")
-        # Favicon oficial de argentina.gob.ar, servido desde el public/ del
-        # theme (el default de core es /base/images/ckan.ico).
-        config_["ckan.favicon"] = "/images/favicon.ico"
+        # Favicon oficial de argentina.gob.ar (servido desde el public/ del
+        # theme) salvo que el portal configure el suyo: solo se reemplaza
+        # el default de core. CKAN__FAVICON del .env se aplica después
+        # (envvars corre último) y gana igual.
+        if config_.get("ckan.favicon") in (None, "", "/base/images/ckan.ico"):
+            config_["ckan.favicon"] = "/images/favicon.ico"
         # ponytail: default de core es 25 y el ckan.ini del portal ya lo fija
         # explícito en ese valor, así que setdefault() no alcanza (update_config
         # corre después del ini y necesita pisarlo). Con más organismos que
@@ -82,6 +87,20 @@ class GobarThemePlugin(plugins.SingletonPlugin, DefaultTranslation):
         # excedentes (ver helpers.py). Si algún perfil necesitara otro valor,
         # cambiarlo acá (no hay caso de uso hoy para que sea por-perfil).
         config_["ckan.group_and_organization_list_all_fields_max"] = 200
+
+    # ── IConfigurable ──
+    def configure(self, config_: CKANConfig) -> None:
+        # Corre después de todos los update_config, incluido el de envvars:
+        # acá ya está el valor final del .env. Sin perfil válido el portal
+        # no arranca (no hay default: cada instalación elige el suyo).
+        try:
+            gobar_helpers.gobar_validate_profile(
+                config_.get("ckanext.gobar_theme.profile")
+            )
+        except ValueError as error:
+            raise CkanConfigurationException(str(error)) from error
+        for warning in gobar_helpers.gobar_check_colors():
+            log.warning("gobar_theme: %s", warning)
 
     # ── IBlueprint ──
     def get_blueprint(self) -> list:
@@ -95,11 +114,11 @@ class GobarThemePlugin(plugins.SingletonPlugin, DefaultTranslation):
     def declare_config_options(
         self, declaration: Declaration, key: Key
     ) -> None:
-        # base|apn|nacional|subnacional. "nacional" preserva el look actual
-        # (Datos Abiertos) sin tocar .env en el portal ya desplegado.
-        declaration.declare(
-            key.ckanext.gobar_theme.profile, "nacional"
-        )
+        # datosgobar|apn (sin distinguir mayúsculas). OBLIGATORIO y sin
+        # default: configure() corta el arranque si falta o es otro valor.
+        #   datosgobar - portal nacional datos.gob.ar (identidad Datos Abiertos)
+        #   apn        - organismo de la Administración Pública Nacional
+        declaration.declare(key.ckanext.gobar_theme.profile).required()
         # Nombre/link institucional del footer ("Institucional"): vacío por
         # defecto (todos los perfiles salvo "apn" usan el default fijo de
         # helpers.gobar_institutional_name/url, "Dirección de Datos
@@ -123,12 +142,22 @@ class GobarThemePlugin(plugins.SingletonPlugin, DefaultTranslation):
         # propio): vacío = no se muestra. Ej. MAGyP: "En este portal podrás
         # obtener datos numéricos y estadísticos del sector agropecuario..."
         declaration.declare(key.ckanext.gobar_theme.subtitle, "")
-        # Override puntual de colores (hex) por encima del preset del
-        # perfil, y de la imagen de fondo del hero de la home. Vacíos por
-        # defecto: no cambian nada hasta que se configuren por .env.
+        # Colores (hex #rgb/#rrggbb) por encima del preset del perfil; vacíos
+        # = usar el preset. Ver el modelo en gobar-base.css ("VARIABLES") y
+        # docs/personalizacion.md. color_primary/color_primary_dark quedan
+        # como alias de color_brand/color_brand_dark (nombres anteriores).
+        declaration.declare(key.ckanext.gobar_theme.color_brand, "")
+        declaration.declare(key.ckanext.gobar_theme.color_brand_dark, "")
+        declaration.declare(key.ckanext.gobar_theme.color_interactive, "")
+        declaration.declare(key.ckanext.gobar_theme.color_accent, "")
         declaration.declare(key.ckanext.gobar_theme.color_primary, "")
         declaration.declare(key.ckanext.gobar_theme.color_primary_dark, "")
-        declaration.declare(key.ckanext.gobar_theme.color_accent, "")
+        # Link "Contacto" del footer y formulario del aviso "Reportar un
+        # problema" (tiene que aceptar ?referencia=<url>). Vacíos: en
+        # datosgobar usan el formulario de Datos Abiertos; en apn no se
+        # muestran.
+        declaration.declare(key.ckanext.gobar_theme.contact_url, "")
+        declaration.declare(key.ckanext.gobar_theme.report_url, "")
         declaration.declare(key.ckanext.gobar_theme.hero_background_image, "")
         # Logo institucional del pie: vacío = usa el logo de la Secretaría
         # de Innovación (el del portal nacional). true|false|auto (default):
@@ -144,7 +173,7 @@ class GobarThemePlugin(plugins.SingletonPlugin, DefaultTranslation):
             "Secretaría de Innovación, Ciencia y Tecnología",
         )
         declaration.declare_int(
-            key.ckanext.gobar_theme.featured_datasets_limit, 4
+            key.ckanext.gobar_theme.featured_datasets_limit, 6
         )
 
     # ── IFacets ──

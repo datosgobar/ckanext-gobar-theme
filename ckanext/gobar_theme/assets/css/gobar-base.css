@@ -6,46 +6,95 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Lora:wght@700&display=swap');
 
 /* ── VARIABLES ──
-   Paleta e identidad de marca "Datos Abiertos" (Dirección de Datos Abiertos):
-   navy institucional + índigo + violeta vibrante, Montserrat en todos los
-   pesos (sin familia serif adicional). Ver skill gobar-design-system. */
+   Modelo de color por perfil (ckanext.gobar_theme.profile = datosgobar|apn).
+   Cada perfil define 4 colores de entrada y el resto se DERIVA de ellos, así
+   que un organismo cambia toda la paleta tocando solo esos 4 (por .env:
+   CKANEXT__GOBAR_THEME__COLOR_BRAND / _BRAND_DARK / _INTERACTIVE / _ACCENT,
+   ver helpers.gobar_color_overrides_style y docs/personalizacion.md):
+     --gobar-brand        superficies de marca: header, botón sólido,
+                          paginación activa
+     --gobar-brand-dark   footer, franja API, hover de botón sólido
+     --gobar-interactive  links, pestaña activa, botones outline, hovers
+     --gobar-accent       detalles decorativos (filete del footer, íconos)
+   Los overrides del .env van como style inline en <body>; por eso los
+   derivados se declaran en "body" y no en ":root" (un var() declarado en
+   :root se resuelve ahí y no vería el override del body).
+   NINGÚN color de marca va hardcodeado en el resto del CSS: siempre por
+   token, para que el perfil apn no herede índigo/violeta de datosgobar. */
 :root {
+  /* Paleta fija de Datos Abiertos (solo la usa el preset datosgobar). */
   --gobar-navy: #212D51;
   --gobar-indigo: #393793;
   --gobar-indigo-dark: #2D2B73;
   --gobar-violeta: #B369ED;
-  --gobar-violeta-light: #C282F0;
+  /* Estados y neutros: iguales en todos los perfiles (Poncho). */
   --gobar-verde: #2E7D33;
   --gobar-amarillo: #E7BA61;
   --gobar-rojo: #C62828;
-  --gobar-primary: var(--gobar-indigo);
-  --gobar-primary-dark: var(--gobar-indigo-dark);
-  --gobar-primary-darker: var(--gobar-navy);
-  --gobar-accent: var(--gobar-violeta);
-  --gobar-accent-dark: var(--gobar-navy);
   --gobar-negro: #333333;
   --gobar-gris-oscuro: #555555;
   --gobar-gris: #888888;
   --gobar-gris-claro: #CCCCCC;
   --gobar-gris-bg: #F2F2F2;
   --gobar-blanco: #FFFFFF;
+}
+
+/* ── PRESET datosgobar: identidad de la Dirección de Datos Abiertos ──
+   navy + índigo + violeta, Montserrat en todos los pesos. */
+body.theme-profile-datosgobar {
+  --gobar-brand: var(--gobar-indigo);
+  --gobar-brand-dark: var(--gobar-indigo-dark);
+  --gobar-interactive: var(--gobar-indigo);
+  --gobar-accent: var(--gobar-violeta);
+  --gobar-heading: var(--gobar-navy);
+  /* Tonos derivados fijados a mano: los valores exactos de la identidad
+     Datos Abiertos, en vez de las fórmulas color-mix() de abajo (este
+     selector es más específico que "body", así que estos ganan). */
+  --gobar-interactive-strong: #372F86;
+  --gobar-surface-tint: #F5F3FD;
+  --gobar-surface-subtle: #FAFAFD;
+  --gobar-chip-bg: #ECEBF7;
+  --gobar-border-soft: #E4E2F0;
+  --gobar-border-hover: #C9C5EA;
+  --gobar-focus-ring: rgba(57, 55, 147, .25);
+  --gobar-shadow-tint: rgba(33, 45, 81, .1);
   --font-titulos: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
   --font-cuerpo: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
 }
 
-/* ── VARIANTE PONCHO (perfiles apn/subnacional/base) ──
-   Prueba: pisa los mismos tokens con la paleta Poncho estricta (navy + celeste,
-   Lora+Montserrat), sin mosaico ni índigo/violeta. Todo el resto del CSS ya
-   consume estas variables, así que no hace falta tocar ningún componente. */
-body.theme-profile-apn,
-body.theme-profile-subnacional,
-body.theme-profile-base {
-  --gobar-primary: #232D4F;        /* navy-poncho */
-  --gobar-primary-dark: #1A2039;
-  --gobar-primary-darker: #141A2E;
-  --gobar-accent: #039BE5;         /* celeste */
-  --gobar-accent-dark: #0767A7;    /* enlace */
+/* ── PRESET apn: Poncho (argentina.gob.ar) ──
+   navy #232D4F de marca, azul de enlace #0767A7 para lo interactivo, celeste
+   #039BE5 de acento; Lora en títulos + Montserrat (Poncho compilado). Sin
+   índigo ni violeta en ningún elemento. */
+body.theme-profile-apn {
+  --gobar-brand: #232D4F;
+  --gobar-brand-dark: #1A2039;
+  --gobar-interactive: #0767A7;
+  --gobar-accent: #039BE5;
+  --gobar-heading: color-mix(in oklab, var(--gobar-brand-dark) 80%, black);
   --font-titulos: 'Lora', Georgia, serif;
+  --font-cuerpo: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ── DERIVADOS (todos los perfiles) ── */
+body {
+  --gobar-interactive-strong: color-mix(in oklab, var(--gobar-interactive) 80%, black);
+  --gobar-surface-tint: color-mix(in srgb, var(--gobar-interactive) 6%, white);
+  --gobar-surface-subtle: color-mix(in srgb, var(--gobar-interactive) 3%, white);
+  --gobar-chip-bg: color-mix(in srgb, var(--gobar-interactive) 9%, white);
+  --gobar-border-soft: color-mix(in srgb, var(--gobar-interactive) 12%, white);
+  --gobar-border-hover: color-mix(in srgb, var(--gobar-interactive) 25%, white);
+  --gobar-focus-ring: color-mix(in srgb, var(--gobar-interactive) 25%, transparent);
+  --gobar-shadow-tint: color-mix(in srgb, var(--gobar-heading) 10%, transparent);
+  /* Alias históricos: el resto del CSS (y extensiones como series-explorer)
+     usa estos nombres. */
+  --gobar-primary: var(--gobar-interactive);
+  --gobar-primary-dark: var(--gobar-brand-dark);
+  --gobar-primary-darker: var(--gobar-heading);
+  /* Puente a Bootstrap 5 / CKAN core (links, foco de formularios). */
+  --bs-link-color: var(--gobar-interactive);
+  --bs-link-hover-color: var(--gobar-interactive-strong);
+  --bs-focus-ring-color: var(--gobar-focus-ring);
 }
 
 /* ── BASE ── */
@@ -58,7 +107,7 @@ a:hover,a:focus { color: var(--gobar-primary); }
    El color y la sombra van SOLO en .masthead (ancho completo). El .navbar
    vive adentro, al ancho del container: si también lleva fondo/sombra se ve
    como una segunda franja con otra textura dentro del header. */
-.masthead { background-color: var(--gobar-primary) !important; border: none; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+.masthead { background-color: var(--gobar-brand) !important; border: none; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
 .masthead .navbar, .navbar { background: transparent !important; border: none; box-shadow: none; }
 .navbar .navbar-brand { font-family: var(--font-cuerpo); font-weight: 700; font-size: 18px; color: var(--gobar-blanco)!important; }
 
@@ -123,7 +172,7 @@ footer .lang-select .select2-selection__rendered,
 footer .lang-select .select2-chosen { color: #333!important; }
 
 /* ── BOTONES ── */
-.btn-primary { background-color: var(--gobar-primary)!important; border-color: var(--gobar-primary)!important; font-family: var(--font-cuerpo); font-weight: 600; }
+.btn-primary { background-color: var(--gobar-brand)!important; border-color: var(--gobar-brand)!important; font-family: var(--font-cuerpo); font-weight: 600; }
 .btn-primary:hover,.btn-primary:focus { background-color: var(--gobar-primary-dark)!important; border-color: var(--gobar-primary-dark)!important; }
 
 /* ── RESPONSIVE ── */
@@ -174,7 +223,7 @@ footer .lang-select .select2-chosen { color: #333!important; }
 }
 .media-grid .media-item:hover {
   border-color: var(--gobar-primary);
-  box-shadow: 0 4px 12px rgba(57, 55, 147, .1);
+  box-shadow: 0 4px 12px var(--gobar-shadow-tint);
   transform: translateY(-2px);
 }
 .media-grid .media-image {
@@ -229,15 +278,15 @@ body.one-column .primary { width: 100%; max-width: 100%; float: none; }
 /* Flecha solo en filas expandibles: el template usa <summary> para nodos con
    hijos y <div> para hojas, así que apuntar a summary la muestra únicamente ahí
    (incluye raíces sin hijos, que van como <div>). */
-summary.gobar-org-row::before { content: "\25B8"; color: var(--gobar-navy); font-size: 15px; line-height: 1; flex: none; }
+summary.gobar-org-row::before { content: "\25B8"; color: var(--gobar-heading); font-size: 15px; line-height: 1; flex: none; }
 summary.gobar-org-row { cursor: pointer; list-style: none; user-select: none; }
 summary.gobar-org-row::-webkit-details-marker { display: none; }
 /* Foco solo cuando se navega con teclado; el click no deja el recuadro azul */
 summary.gobar-org-row:focus:not(:focus-visible) { outline: none; box-shadow: none; }
-details[open] > summary.gobar-org-row::before { content: "\25BE"; color: var(--gobar-navy); }
-.gobar-org-row-name { font-size: 14.5px; font-weight: 700; color: #312E3D; text-decoration: none; transition: color .15s; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.gobar-org-row-name:hover { color: #372F86; text-decoration: underline; }
-.gobar-org-row-count { background: #F1EFFA; color: #7A76A8; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 5px; white-space: nowrap; flex: none; }
+details[open] > summary.gobar-org-row::before { content: "\25BE"; color: var(--gobar-heading); }
+.gobar-org-row-name { font-size: 14.5px; font-weight: 700; color: var(--gobar-heading); text-decoration: none; transition: color .15s; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gobar-org-row-name:hover { color: var(--gobar-interactive-strong); text-decoration: underline; }
+.gobar-org-row-count { background: var(--gobar-chip-bg); color: var(--gobar-gris-oscuro); font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 5px; white-space: nowrap; flex: none; }
 /* Padre colapsado muestra el total del subárbol; abierto, solo sus propios
    datasets (los de los hijos ya figuran en cada fila hija). */
 .gobar-org-count-own { display: none; }
@@ -250,23 +299,23 @@ details[open] > summary > .gobar-org-count-total { display: none; }
 /* Conector anclado al centro de la FILA (~22px = 11px padding + media línea de
    texto), no a top:50% del <li>: si el li contiene un <details> hijo expandido
    crece en alto y el 50% se descuelga muy por debajo de su fila. */
-.gobar-org-children > li::before { content: ""; position: absolute; left: -22px; top: 22px; width: 16px; height: 1.5px; background: #E4E2F0; }
-.gobar-org-children > li::after { content: ""; position: absolute; left: -22px; top: 0; bottom: 0; width: 1.5px; background: #E4E2F0; }
+.gobar-org-children > li::before { content: ""; position: absolute; left: -22px; top: 22px; width: 16px; height: 1.5px; background: var(--gobar-border-soft); }
+.gobar-org-children > li::after { content: ""; position: absolute; left: -22px; top: 0; bottom: 0; width: 1.5px; background: var(--gobar-border-soft); }
 .gobar-org-children > li:last-child::after { bottom: auto; height: 22px; }
 .gobar-org-children .gobar-org-row { padding: 11px 4px; }
-.gobar-org-children .gobar-org-row-name { font-size: 13.5px; font-weight: 600; color: #372F86; }
+.gobar-org-children .gobar-org-row-name { font-size: 13.5px; font-weight: 600; color: var(--gobar-interactive-strong); }
 /* Resultado resaltado por la búsqueda del árbol (hierarchy) */
 .gobar-org-tree li.highlighted > .gobar-org-row .gobar-org-row-name,
-.gobar-org-tree li.highlighted > details > summary .gobar-org-row-name { color: #372F86; text-decoration: underline; }
+.gobar-org-tree li.highlighted > details > summary .gobar-org-row-name { color: var(--gobar-interactive-strong); text-decoration: underline; }
 
 /* ── Listado de recursos ("Datos y Recursos") ──
    Filas livianas separadas por un filete: título en navy, una línea de
    metadatos (formato · fecha) y "Explorar" en outline para que no compitan
    tres botones sólidos con la acción principal de la página. */
 .resource-list { margin: 8px 0 0; }
-.resource-list .resource-item { padding: 16px 150px 16px 56px; margin: 0; border-bottom: 1px solid #E4E2F0; border-radius: 0; }
-.resource-list .resource-item:first-child { border-top: 1px solid #E4E2F0; }
-.resource-list .resource-item:hover { background: #FAFAFD; }
+.resource-list .resource-item { padding: 16px 150px 16px 56px; margin: 0; border-bottom: 1px solid var(--gobar-border-soft); border-radius: 0; }
+.resource-list .resource-item:first-child { border-top: 1px solid var(--gobar-border-soft); }
+.resource-list .resource-item:hover { background: var(--gobar-surface-subtle); }
 .resource-item .format-label { top: 18px; left: 8px; }
 .resource-item .heading { color: var(--gobar-primary-darker); font-weight: 600; font-size: 16px; line-height: 1.35; }
 .resource-item .heading:hover { color: var(--gobar-primary); }
@@ -283,7 +332,7 @@ details[open] > summary > .gobar-org-count-total { display: none; }
 .resource-item .dropdown > .btn-primary:hover,
 .resource-item .dropdown > .btn-primary:focus-visible,
 .resource-item .dropdown > .btn-primary.show { background: var(--gobar-primary)!important; color: var(--gobar-blanco)!important; }
-.resource-item .dropdown > .btn-primary:focus-visible, .resource-item .dropdown > .btn-primary.show { box-shadow: 0 0 0 3px rgba(57, 55, 147, .25)!important; }
+.resource-item .dropdown > .btn-primary:focus-visible, .resource-item .dropdown > .btn-primary.show { box-shadow: 0 0 0 3px var(--gobar-focus-ring)!important; }
 /* Mobile: core esconde "Explorar" (.resource-item .btn-group) abajo de sm.
    Lo mostramos debajo de los metadatos, en flujo, para que se pueda
    descargar o ir al recurso sin entrar a su página. */
@@ -305,26 +354,26 @@ details[open] > summary > .gobar-org-count-total { display: none; }
    Core pinta a.tag:hover con su azul petróleo (#30778D) y sombra interna. */
 .tags { margin: 24px 0; }
 .tags .tag-list { background: none; border: 0; padding: 0; }
-a.tag { background: var(--gobar-blanco); border: 1px solid #E4E2F0; color: var(--gobar-primary-darker); }
-a.tag:hover, a.tag:focus-visible { background: #F5F3FD; border-color: var(--gobar-primary); color: var(--gobar-primary); box-shadow: none; text-decoration: none; }
+a.tag { background: var(--gobar-blanco); border: 1px solid var(--gobar-border-soft); color: var(--gobar-primary-darker); }
+a.tag:hover, a.tag:focus-visible { background: var(--gobar-surface-tint); border-color: var(--gobar-primary); color: var(--gobar-primary); box-shadow: none; text-decoration: none; }
 
 /* ── Pestañas de dataset, organismo y tema (.page-header .nav-tabs) ──
    Core usa un encabezado gris (#F6F6F6) con solapas y texto azul petróleo
    que quedan despegados del cuerpo blanco. Acá: mismo fondo que el cuerpo,
    un filete lila abajo y la pestaña activa marcada con una barra índigo. */
-.page-header { background: var(--gobar-blanco); padding: 8px 24px 0; border-bottom: 1px solid #E4E2F0; }
+.page-header { background: var(--gobar-blanco); padding: 8px 24px 0; border-bottom: 1px solid var(--gobar-border-soft); }
 .page-header .nav-tabs { border-bottom: 0; gap: 4px; }
 .page-header .nav-tabs > li > a { margin: 0; padding: 12px 14px; border: 0!important; border-bottom: 3px solid transparent!important; border-radius: 0; background: none!important; color: var(--gobar-gris-oscuro); font-weight: 500; }
 .page-header .nav-tabs > li > a .fa { color: var(--gobar-gris); margin-right: 4px; }
-.page-header .nav-tabs > li > a:hover, .page-header .nav-tabs > li > a:focus-visible { color: var(--gobar-primary); border-bottom-color: #C9C5EA!important; text-decoration: none; }
+.page-header .nav-tabs > li > a:hover, .page-header .nav-tabs > li > a:focus-visible { color: var(--gobar-primary); border-bottom-color: var(--gobar-border-hover)!important; text-decoration: none; }
 .page-header .nav-tabs > li.active > a { color: var(--gobar-primary); font-weight: 600; border-bottom-color: var(--gobar-primary)!important; }
 .page-header .nav-tabs > li.active > a .fa, .page-header .nav-tabs > li > a:hover .fa { color: var(--gobar-primary); }
 
 /* ── REPORTAR UN PROBLEMA (dataset y recurso) ──
    Acción secundaria: una sola línea sobre un fondo lila muy suave, para que se
    note sin competir con los recursos (sin borde ni botón sólido). */
-.gobar-reportar { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; margin: 24px 0 28px; padding: 12px 16px; background: #F5F3FD; border-radius: 10px; font-family: var(--font-cuerpo); font-size: 15px; color: var(--gobar-primary-darker); }
-.gobar-reportar-icon { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; flex: none; border-radius: 50%; background: var(--gobar-violeta); color: var(--gobar-blanco); font-size: 14px; }
+.gobar-reportar { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; margin: 24px 0 28px; padding: 12px 16px; background: var(--gobar-surface-tint); border-radius: 10px; font-family: var(--font-cuerpo); font-size: 15px; color: var(--gobar-primary-darker); }
+.gobar-reportar-icon { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; flex: none; border-radius: 50%; background: var(--gobar-accent); color: var(--gobar-blanco); font-size: 14px; }
 .gobar-reportar-texto { flex: 1 1 220px; font-weight: 500; }
 .gobar-reportar a { color: var(--gobar-primary); font-weight: 700; text-decoration: none; white-space: nowrap; }
 .gobar-reportar a:hover, .gobar-reportar a:focus-visible { text-decoration: underline; }
@@ -335,17 +384,17 @@ a.tag:hover, a.tag:focus-visible { background: #F5F3FD; border-color: var(--goba
    table-toggle-more de core, que comprimía la tabla al plegar/desplegar. */
 .gobar-meta { margin: 32px 0 8px; }
 .gobar-meta-title { font-family: var(--font-titulos); font-size: 22px; font-weight: 600; color: var(--gobar-primary-darker); margin: 0 0 12px; }
-.gobar-meta-list { margin: 0; border-top: 1px solid #E4E2F0; }
-.gobar-meta-row { display: grid; grid-template-columns: minmax(160px, 34%) 1fr; gap: 4px 24px; padding: 12px 4px; border-bottom: 1px solid #E4E2F0; }
+.gobar-meta-list { margin: 0; border-top: 1px solid var(--gobar-border-soft); }
+.gobar-meta-row { display: grid; grid-template-columns: minmax(160px, 34%) 1fr; gap: 4px 24px; padding: 12px 4px; border-bottom: 1px solid var(--gobar-border-soft); }
 .gobar-meta-row dt { margin: 0; font-size: 14px; font-weight: 600; color: var(--gobar-gris-oscuro); }
 .gobar-meta-row dd { margin: 0; font-size: 15px; color: var(--gobar-negro); overflow-wrap: anywhere; }
 /* "Mostrar más": botón a lo ancho de la lista, debajo de la última fila.
    Al abrir, las filas siguen debajo con las mismas columnas. */
-.gobar-meta-more > summary { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--gobar-primary); background: #FAFAFD; border-bottom: 1px solid #E4E2F0; list-style: none; }
+.gobar-meta-more > summary { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--gobar-primary); background: var(--gobar-surface-subtle); border-bottom: 1px solid var(--gobar-border-soft); list-style: none; }
 .gobar-meta-more > summary::-webkit-details-marker { display: none; }
 .gobar-meta-more > summary::after { content: "▾"; }
 .gobar-meta-more[open] > summary::after { content: "▴"; }
-.gobar-meta-more > summary:hover { background: #F5F3FD; }
+.gobar-meta-more > summary:hover { background: var(--gobar-surface-tint); }
 .gobar-meta-more > summary:focus-visible { outline: 2px solid var(--gobar-primary); outline-offset: -2px; }
 .gobar-meta-more .gobar-meta-menos, .gobar-meta-more[open] .gobar-meta-mas { display: none; }
 .gobar-meta-more[open] .gobar-meta-menos { display: inline; }
@@ -358,12 +407,12 @@ a.tag:hover, a.tag:focus-visible { background: #F5F3FD; border-color: var(--goba
    Core pinta el encabezado en gris (#F6F6F6) y el recurso activo en
    gris petróleo (#647A82) con una flecha. Acá: encabezado blanco, filetes
    y el activo marcado con barra índigo, igual que las pestañas. */
-.secondary .module-narrow .module-heading { background: var(--gobar-blanco); border-bottom: 1px solid #E4E2F0; color: var(--gobar-primary-darker); font-size: 15px; font-weight: 600; }
+.secondary .module-narrow .module-heading { background: var(--gobar-blanco); border-bottom: 1px solid var(--gobar-border-soft); color: var(--gobar-primary-darker); font-size: 15px; font-weight: 600; }
 .secondary .module-narrow .module-heading .fa { color: var(--gobar-primary); margin-right: 4px; }
 .resources .nav-simple > li { border: 0; }  /* core: border-bottom dotted; el filete va en el <a> */
-.resources .nav-simple > li > a { padding: 12px 16px; border-bottom: 1px solid #E4E2F0; color: var(--gobar-gris-oscuro); font-size: 14px; line-height: 1.4; background: none; }
-.resources .nav-simple > li > a:hover, .resources .nav-simple > li > a:focus-visible { color: var(--gobar-primary); background: #FAFAFD; text-decoration: none; }
-.resources .nav-simple > li.active > a { color: var(--gobar-primary); font-weight: 600; background: #F5F3FD; box-shadow: inset 3px 0 0 var(--gobar-primary); }
+.resources .nav-simple > li > a { padding: 12px 16px; border-bottom: 1px solid var(--gobar-border-soft); color: var(--gobar-gris-oscuro); font-size: 14px; line-height: 1.4; background: none; }
+.resources .nav-simple > li > a:hover, .resources .nav-simple > li > a:focus-visible { color: var(--gobar-primary); background: var(--gobar-surface-subtle); text-decoration: none; }
+.resources .nav-simple > li.active > a { color: var(--gobar-primary); font-weight: 600; background: var(--gobar-surface-tint); box-shadow: inset 3px 0 0 var(--gobar-primary); }
 .resources .nav-simple > li.active > a::before, .resources .nav-simple > li.active > a::after { display: none; }
 
 /* ── Botón "URL ▾" y su menú (página del recurso) ──
@@ -371,11 +420,11 @@ a.tag:hover, a.tag:focus-visible { background: #F5F3FD; border-color: var(--goba
    El menú muestra la URL completa, seleccionable, y "Copiar URL", que al
    copiar pasa a verde con ✓ y "URL copiada" por 2 segundos. */
 .gobar-url-toggle, .gobar-copiar { display: inline-flex; align-items: center; gap: 6px; color: var(--gobar-primary); background: var(--gobar-blanco); border: 1px solid var(--gobar-primary); font-weight: 600; }
-.gobar-url-toggle:hover, .gobar-url-toggle.show, .gobar-copiar:hover { background: #F5F3FD; color: var(--gobar-primary); border-color: var(--gobar-primary); }
-.gobar-url-toggle:focus-visible, .gobar-copiar:focus-visible { outline: 0; box-shadow: 0 0 0 3px rgba(57, 55, 147, .25); }
+.gobar-url-toggle:hover, .gobar-url-toggle.show, .gobar-copiar:hover { background: var(--gobar-surface-tint); color: var(--gobar-primary); border-color: var(--gobar-primary); }
+.gobar-url-toggle:focus-visible, .gobar-copiar:focus-visible { outline: 0; box-shadow: 0 0 0 3px var(--gobar-focus-ring); }
 .gobar-copiar.is-copiado, .gobar-copiar.is-copiado:hover { color: var(--gobar-verde); border-color: var(--gobar-verde); background: var(--gobar-blanco); }
 .gobar-copiar.is-copiado .fa-copy::before { content: "\f00c"; }  /* fa-check */
-.gobar-url-menu { width: min(460px, calc(100vw - 32px)); padding: 12px 14px; margin-top: 6px !important; border-color: #E4E2F0; box-shadow: 0 6px 20px rgba(33, 45, 81, .12); }
+.gobar-url-menu { width: min(460px, calc(100vw - 32px)); padding: 12px 14px; margin-top: 6px !important; border-color: var(--gobar-border-soft); box-shadow: 0 6px 20px var(--gobar-shadow-tint); }
 .gobar-url-menu-titulo { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--gobar-gris-oscuro); }
 .gobar-url-menu-url { margin: 4px 0 12px; font-size: 13px; color: var(--gobar-negro); overflow-wrap: anywhere; user-select: all; }
 /* Mobile: el menú se ancla a la fila de acciones (no al botón, que queda
@@ -407,4 +456,15 @@ a.tag:hover, a.tag:focus-visible { background: #F5F3FD; border-color: var(--goba
 
 /* Contador del sidebar de organismo/tema ("Datasets 2"): core le pone un
    border-top dotted; filete de la marca. */
-.secondary .nums { border-top: 1px solid #E4E2F0; }
+.secondary .nums { border-top: 1px solid var(--gobar-border-soft); }
+
+/* ── Logo como texto (perfil apn sin ckan.site_logo) ── */
+.masthead .logo .gobar-logo-texto { font-family: var(--font-titulos); font-size: 20px; font-weight: 700; color: var(--gobar-blanco); line-height: 36px; white-space: nowrap; }
+.gobar-footer-brand .gobar-logo-texto { font-family: var(--font-titulos); font-size: 20px; font-weight: 700; color: var(--gobar-blanco); margin-bottom: 8px; }
+
+/* ── Placeholder de organismo sin logo ──
+   CKAN usa /base/images/placeholder-organization.png (el theme lo reemplaza
+   por un edificio índigo) en el sidebar, listados y fichas. Como es raster no
+   toma el color del perfil: se corre la imagen fuera de su caja y se pinta el
+   mismo edificio (SVG como máscara) con el color de marca. */
+img[src$="/placeholder-organization.png"] { object-position: -99999px 0; background-color: var(--gobar-brand); -webkit-mask: var(--gobar-icono-organismo) center / contain no-repeat; mask: var(--gobar-icono-organismo) center / contain no-repeat; }
