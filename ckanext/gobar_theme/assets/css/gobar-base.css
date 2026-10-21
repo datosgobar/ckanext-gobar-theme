@@ -376,3 +376,27 @@ a.tag:hover, a.tag:focus-visible { background: #F5F3FD; border-color: var(--goba
 .gobar-copiar:hover { background: #F5F3FD; }
 .gobar-copiar:focus-visible { outline: 2px solid var(--gobar-primary); outline-offset: 1px; }
 .gobar-copiar.is-copiado { color: var(--gobar-verde); }
+
+/* ── Página del recurso: "Ir al recurso" alineado con el título ──
+   Core sube las acciones con top: -10px y el botón quedaba más alto que la
+   primera línea del título (que arranca en el borde del padding). Sin ese
+   desplazamiento, los 35px del botón quedan centrados con la primera línea
+   (~32px). Se mantiene el float de core, pero ocupando menos alto que una
+   línea del título (botón 35px − 6px, sin el margen de la lista): así solo
+   la primera línea se acorta y las siguientes usan todo el ancho. */
+.module-resource .actions { top: 0; margin: 0 0 -6px 16px; }
+.module-resource .actions > ul { margin-bottom: 0; }
+/* Mobile: al lado del botón el título quedaba en una columna finita (una
+   palabra por línea). Ahí el título va primero a todo el ancho y las
+   acciones debajo, alineadas a la izquierda. */
+@media (max-width: 575.98px) {
+  .module-resource > .module-content { display: flex; flex-direction: column; }
+  .module-resource > .module-content > * { order: 2; }
+  .module-resource > .module-content > .page-heading { order: 0; }
+  .module-resource > .module-content > .actions { order: 1; float: none; margin: 0 0 16px; }
+  .module-resource > .module-content > .actions > ul { justify-content: flex-start !important; padding-left: 0; }
+}
+
+/* Contador del sidebar de organismo/tema ("Datasets 2"): core le pone un
+   border-top dotted; filete de la marca. */
+.secondary .nums { border-top: 1px solid #E4E2F0; }

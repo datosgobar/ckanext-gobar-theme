@@ -88,19 +88,34 @@
   background: none;
 }
 
+/* Nombre a la izquierda (envuelve si es largo) y contador fijo a la derecha,
+   alineado con la primera línea. Antes era inline-flex con flex-wrap y, con
+   nombres largos, el contador bajaba solo a otra línea. */
 .gobar-facet nav .nav-facet .nav-item > a {
   padding: 0.3rem 0.5rem;
   border: 0 !important;
-  display: inline-flex;
-  flex-wrap: wrap;
+  display: flex;
   align-items: baseline;
-  gap: 0.25rem 0.4rem;
+  gap: 0.5rem;
 }
 
 /* El nombre del item (p. ej. organización) se muestra completo y envuelve */
 .gobar-facet nav .nav-facet .item-label {
+  flex: 1;
+  min-width: 0;
   white-space: normal;
   overflow-wrap: anywhere;
+}
+
+.gobar-facet nav .nav-facet .item-count {
+  flex: none;
+  margin-left: auto;
+}
+
+/* Core marca el " - " entre nombre y contador con .hidden (Bootstrap 3), que
+   Bootstrap 5 ya no define: el guion se veía. */
+.gobar-facet nav .nav-facet .separator.hidden {
+  display: none;
 }
 
 .gobar-facet nav .nav-facet .nav-item > a:hover {
