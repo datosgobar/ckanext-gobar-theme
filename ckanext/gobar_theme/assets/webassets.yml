@@ -12,3 +12,4 @@ gobar_theme_js:
   output: gobar-theme/%(version)s_gobar_theme.js
   contents:
     - js/gobar-home.js
+    - js/gobar-copiar.js
