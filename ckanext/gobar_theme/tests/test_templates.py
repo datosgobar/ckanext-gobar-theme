@@ -39,3 +39,19 @@ def test_no_trunca_titulos(path):
     with open(path, encoding='utf-8') as f:
         assert not TRUNCA_NOMBRES.search(f.read()), \
             'el override volvió a cortar el nombre con truncate'
+
+
+def test_reportar_problema_codifica_referencia():
+    """El aviso arma ?referencia=<url>: la URL tiene que ir codificada para
+    que un '&' o un '#' no corten la query del formulario de contacto."""
+    from urllib.parse import parse_qs, urlparse
+    env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader(TEMPLATES_DIR), autoescape=True)
+    env.globals['_'] = lambda s: s
+    ref = 'https://datos.gob.ar/dataset/x/resource/y?a=1&b=2#frag'
+    html = env.get_template('snippets/reportar_problema.html').render(ref=ref)
+    href = re.search(r'href="([^"]+)"', html).group(1).replace('&amp;', '&')
+    url = urlparse(href)
+    assert url.netloc == 'www.argentina.gob.ar'
+    assert url.path == '/datos-abiertos/contacto'
+    assert parse_qs(url.query) == {'referencia': [ref]}
