@@ -1,0 +1,13 @@
+{#
+  Aviso "Reportar un problema": abre el formulario de contacto de Datos
+  Abiertos con el campo Referencia precompletado con `ref` (URL absoluta del
+  dataset o recurso). El formulario corta Referencia en 128 caracteres.
+#}
+<aside class="gobar-reportar">
+  <i class="fa fa-flag gobar-reportar-icon" aria-hidden="true"></i>
+  <div class="gobar-reportar-texto">
+    <strong>{{ _('¿Encontraste un error o un dato desactualizado?') }}</strong>
+    <span>{{ _('Avisanos y lo revisamos con el organismo responsable.') }}</span>
+  </div>
+  <a class="btn btn-primary" href="https://www.argentina.gob.ar/datos-abiertos/contacto?referencia={{ ref | urlencode }}" target="_blank" rel="noopener">{{ _('Reportar un problema') }}</a>
+</aside>

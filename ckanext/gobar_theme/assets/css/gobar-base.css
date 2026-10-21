@@ -308,3 +308,9 @@ details[open] > summary > .gobar-org-count-total { display: none; }
   text-transform: uppercase;
   color: var(--gobar-gris, #888);
 }
+
+/* ── REPORTAR UN PROBLEMA (dataset y recurso) ── */
+.gobar-reportar { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin: 24px 0; padding: 16px 20px; background: #F1F0FA; border-left: 4px solid var(--gobar-primary); border-radius: 6px; font-family: var(--font-cuerpo); }
+.gobar-reportar-icon { color: var(--gobar-primary); font-size: 20px; }
+.gobar-reportar-texto { flex: 1 1 260px; display: flex; flex-direction: column; gap: 2px; color: var(--gobar-negro); }
+.gobar-reportar-texto span { color: var(--gobar-gris-oscuro); font-size: 14px; }
