@@ -130,6 +130,102 @@ def test_format_date_invalida_devuelve_el_valor_original():
     assert helpers.gobar_format_date("no-es-fecha") == "no-es-fecha"
 
 
+# ── Perfil, colores, marca y contacto ──
+
+def _config(monkeypatch, **values):
+    conf = {f"ckanext.gobar_theme.{k}" if "." not in k else k: v for k, v in values.items()}
+    monkeypatch.setattr(helpers.toolkit, "config", conf)
+
+
+@pytest.mark.parametrize("raw,esperado", [
+    ("datosgobar", "datosgobar"), ("APN", "apn"), ("  DatosGobAr ", "datosgobar"),
+])
+def test_validate_profile_normaliza(raw, esperado):
+    assert helpers.gobar_validate_profile(raw) == esperado
+
+
+@pytest.mark.parametrize("raw", [None, "", "nacional", "base", "subnacional", "apn2"])
+def test_validate_profile_rechaza_vacio_y_desconocidos(raw):
+    with pytest.raises(ValueError, match="obligatorio"):
+        helpers.gobar_validate_profile(raw)
+
+
+def test_color_config_valida_y_aplica_alias(monkeypatch):
+    _config(monkeypatch, color_primary="#00703C", color_brand_dark="#003",
+            color_accent="rojo")
+    colores = helpers.gobar_color_config()
+    # alias viejo -> brand; interactive sigue a brand si no se configura;
+    # "rojo" no es hex y se ignora.
+    assert colores == {"--gobar-brand": "#00703C", "--gobar-brand-dark": "#003",
+                       "--gobar-interactive": "#00703C"}
+    assert helpers.gobar_color_overrides_style() == (
+        "--gobar-brand: #00703C; --gobar-brand-dark: #003; "
+        "--gobar-interactive: #00703C;")
+
+
+def test_color_config_vacio_no_genera_style(monkeypatch):
+    _config(monkeypatch)
+    assert helpers.gobar_color_overrides_style() == ""
+
+
+def test_contraste_wcag():
+    assert round(helpers.gobar_contrast_ratio("#000000", "#FFFFFF"), 1) == 21.0
+    assert round(helpers.gobar_contrast_ratio("#0767A7", "#FFFFFF"), 2) == 5.99
+    assert round(helpers.gobar_contrast_ratio("#039BE5", "#FFFFFF"), 2) == 3.08
+
+
+def test_check_colors_avisa_formato_y_contraste(monkeypatch):
+    _config(monkeypatch, color_brand="#039BE5", color_accent="azul")
+    avisos = helpers.gobar_check_colors()
+    assert any("color_accent='azul'" in a for a in avisos)
+    assert any("--gobar-brand #039BE5" in a and "3.08" in a for a in avisos)
+    _config(monkeypatch, color_brand="#232D4F", color_interactive="#0767A7")
+    assert helpers.gobar_check_colors() == []
+
+
+def test_report_url_por_perfil(monkeypatch):
+    ref = "https://datos.gob.ar/dataset/x/resource/y?a=1&b=2#frag"
+    _config(monkeypatch, profile="datosgobar")
+    url = helpers.gobar_report_url(ref)
+    from urllib.parse import parse_qs, urlparse
+    assert url.startswith(helpers.DATOSGOBAR_CONTACT_URL + "?referencia=")
+    assert parse_qs(urlparse(url).query) == {"referencia": [ref]}
+    _config(monkeypatch, profile="apn")
+    assert helpers.gobar_report_url(ref) == ""
+    _config(monkeypatch, profile="apn", report_url="https://org.gob.ar/form?x=1")
+    assert helpers.gobar_report_url("r").startswith("https://org.gob.ar/form?x=1&referencia=")
+
+
+def test_contacto_y_descripcion_por_perfil(monkeypatch):
+    _config(monkeypatch, profile="datosgobar")
+    assert helpers.gobar_contact_url() == helpers.DATOSGOBAR_CONTACT_URL
+    assert helpers.gobar_site_description() == helpers.DATOSGOBAR_DESCRIPTION
+    _config(monkeypatch, profile="apn")
+    assert helpers.gobar_contact_url() == ""
+    assert helpers.gobar_site_description() == ""
+    _config(monkeypatch, **{"profile": "apn", "contact_url": "mailto:datos@org.gob.ar",
+                            "ckan.site_description": "Portal del organismo"})
+    assert helpers.gobar_contact_url() == "mailto:datos@org.gob.ar"
+    assert helpers.gobar_site_description() == "Portal del organismo"
+
+
+def test_footer_contact_vacio_por_defecto(monkeypatch):
+    _config(monkeypatch, profile="apn")
+    assert helpers.gobar_footer_contact() == {"address": "", "phone": "", "email": ""}
+    _config(monkeypatch, **{"profile": "apn", "contact_email": " datos@org.gob.ar "})
+    assert helpers.gobar_footer_contact()["email"] == "datos@org.gob.ar"
+
+
+def test_site_logo_por_perfil(monkeypatch):
+    monkeypatch.setattr(helpers.toolkit.h, "url_for_static", lambda p: "/static/" + p.lstrip("/"), raising=False)
+    _config(monkeypatch, **{"profile": "datosgobar", "ckan.site_logo": helpers.CKAN_DEFAULT_LOGO})
+    assert helpers.gobar_site_logo() == "/static/" + helpers.DATOSGOBAR_LOGO
+    _config(monkeypatch, **{"profile": "apn", "ckan.site_logo": helpers.CKAN_DEFAULT_LOGO})
+    assert helpers.gobar_site_logo() == ""
+    _config(monkeypatch, **{"profile": "apn", "ckan.site_logo": "https://org.gob.ar/logo.svg"})
+    assert helpers.gobar_site_logo() == "https://org.gob.ar/logo.svg"
+
+
 def test_org_tree_prune_deja_coincidencias_y_ancestros():
     top_nodes, _ = _tree()
     podado = helpers.gobar_org_tree_prune(top_nodes, {"aduana"})

@@ -4,10 +4,18 @@
    solo por /user/login. Se vacía el bloque entero para no renderizar la barra. #}
 {% block header_account %}{% endblock %}
 
+{# Logo: ckan.site_logo (nativo) o, si no hay, el de datos.gob.ar en el
+   perfil datosgobar; en apn sin logo, el título del portal como texto. #}
 {% block header_logo %}
+  {% set site_logo = h.gobar_site_logo() %}
+  {% set site_title = h.gobar_get_config('ckan.site_title', 'Portal de datos') %}
   <a class="logo" href="{{ h.url_for('home.index') }}">
-    <img src="{{ h.url_for_static('images/Logo_datos-gob-ar_Blanco.png') }}"
-         alt="datos.gob.ar" style="height: 36px;" />
+    {% if site_logo %}
+      <img src="{{ site_logo }}"
+           alt="{{ site_title }}" style="height: 36px;" />
+    {% else %}
+      <span class="gobar-logo-texto">{{ site_title }}</span>
+    {% endif %}
   </a>
 {% endblock %}
 
@@ -27,7 +35,7 @@
     <a class="nav-link" href="{{ h.url_for('recursos.recursos') }}">Recursos</a>
   </li>
   {% endif %}
-  {% if h.plugin_loaded('series_explorer') %}
+  {% if h.plugin_loaded('series_explorer') and not h.gobar_is_apn() %}
   <li class="nav-item{% if '/series' in request.path %} active{% endif %}">
     <a class="nav-link" href="{{ h.url_for('series.series') }}">Series</a>
   </li>

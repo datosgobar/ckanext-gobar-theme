@@ -1,11 +1,13 @@
 {%  ckan_extends %}
 
 {# Única fuente de atributos del <body>: class (theme-profile-*, homepage,
-   series-page) y el style inline con los overrides de color de .ini/env
+   series-page) y el style inline con la URL del ícono genérico de organismo
+   (--gobar-icono-organismo, resuelta con url_for_static para que funcione
+   con ckan.root_path) y los overrides de color de .ini/env
    (gobar_color_overrides_style — vacío si no hay overrides configurados).
    Un style inline le gana en especificidad a body.theme-profile-* sin
    necesitar !important ni un <style>/:root aparte. #}
-{% block bodytag %}{{ super() }} class="theme-profile-{{ h.gobar_theme_profile() }}{% if request.path == '/' %} homepage{% endif %}{% if '/series' in request.path %} series-page{% endif %}{% if request.path in ('/group', '/group/', '/organization', '/organization/') %} one-column{% endif %}"{% set color_style = h.gobar_color_overrides_style() %}{% if color_style %} style="{{ color_style }}"{% endif %}{% endblock %}
+{% block bodytag %}{{ super() }} class="theme-profile-{{ h.gobar_theme_profile() }}{% if request.path == '/' %} homepage{% endif %}{% if '/series' in request.path %} series-page{% endif %}{% if request.path in ('/group', '/group/', '/organization', '/organization/') %} one-column{% endif %}"{% set color_style = h.gobar_color_overrides_style() %} style="--gobar-icono-organismo: url('{{ h.url_for_static('images/institucion.svg') }}');{% if color_style %} {{ color_style }}{% endif %}"{% endblock %}
 
 {# Solo se overridean bloques que core define EN base.html (bodytag, styles,
    scripts). breadcrumb_content y primary viven en page.html, que es hijo de
