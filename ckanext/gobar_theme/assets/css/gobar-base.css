@@ -366,17 +366,17 @@ a.tag:hover, a.tag:focus-visible { background: #F5F3FD; border-color: var(--goba
 .resources .nav-simple > li.active > a { color: var(--gobar-primary); font-weight: 600; background: #F5F3FD; box-shadow: inset 3px 0 0 var(--gobar-primary); }
 .resources .nav-simple > li.active > a::before, .resources .nav-simple > li.active > a::after { display: none; }
 
-/* ── URL del recurso con ícono para copiarla ──
-   En línea, sin recuadro: rótulo, link recortado y, pegado al link, un
-   ícono-botón (el texto queda para lectores de pantalla y como tooltip).
-   Al copiar, el ícono pasa a ✓ verde. */
-.gobar-res-url { display: flex; align-items: center; gap: 8px; margin: 4px 0 16px; font-size: 14px; }
+/* ── URL del recurso (línea informativa) ── */
+.gobar-res-url { display: flex; gap: 6px; margin: 4px 0 16px; font-size: 14px; }
 .gobar-res-url-label { flex: none; color: var(--gobar-gris-oscuro); }
-.gobar-res-url-link { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--gobar-primary); }
-.gobar-copiar { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; margin-left: -4px; padding: 0; font-size: 14px; color: var(--gobar-primary); background: none; border: 0; border-radius: 6px; cursor: pointer; }
-.gobar-copiar:hover { background: #F5F3FD; }
-.gobar-copiar:focus-visible { outline: 2px solid var(--gobar-primary); outline-offset: 1px; }
-.gobar-copiar.is-copiado { color: var(--gobar-verde); }
+.gobar-res-url-link { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--gobar-primary); }
+
+/* ── "Copiar URL" junto a "Ir al recurso": outline índigo, como "Explorar".
+   Al copiar pasa a verde con ✓ y "URL copiada" por 2 segundos. */
+.gobar-copiar { display: inline-flex; align-items: center; gap: 6px; color: var(--gobar-primary); background: var(--gobar-blanco); border: 1px solid var(--gobar-primary); font-weight: 600; }
+.gobar-copiar:hover { background: #F5F3FD; color: var(--gobar-primary); border-color: var(--gobar-primary); }
+.gobar-copiar:focus-visible { outline: 0; box-shadow: 0 0 0 3px rgba(57, 55, 147, .25); }
+.gobar-copiar.is-copiado, .gobar-copiar.is-copiado:hover { color: var(--gobar-verde); border-color: var(--gobar-verde); background: var(--gobar-blanco); }
 .gobar-copiar.is-copiado .fa-copy::before { content: "\f00c"; }  /* fa-check */
 
 /* ── Página del recurso: "Ir al recurso" alineado con el título ──

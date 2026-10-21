@@ -41,20 +41,32 @@
 {% endblock %}
 
 {#
-  URL del recurso con un ícono para copiarla pegado al link (core: "URL: <link>" suelto,
-  que solo se podía copiar con click derecho). Conserva la clase
-  resource-url-analytics que usa googleanalytics para contar las descargas.
+  URL del recurso: la misma línea "URL: <link>" de core, recortada con "…"
+  dentro de su ancho (el link largo desbordaba la página en mobile).
 #}
 {% block resource_read_url %}
   {% if res.url and h.is_url(res.url) %}
-    <div class="gobar-res-url">
+    <p class="gobar-res-url">
       <span class="gobar-res-url-label">{{ _('URL:') }}</span>
       <a class="resource-url-analytics gobar-res-url-link" href="{{ res.url }}" title="{{ res.url }}">{{ res.url }}</a>
-      <button type="button" class="gobar-copiar" data-gobar-copiar="{{ res.url }}" data-copiado="{{ _('URL copiada') }}" title="{{ _('Copiar la URL del recurso') }}">
-        <i class="fa fa-copy" aria-hidden="true"></i><span class="gobar-copiar-label visually-hidden" aria-live="polite">{{ _('Copiar la URL del recurso') }}</span>
-      </button>
-    </div>
+    </p>
   {% else %}
     {{ super() }}
+  {% endif %}
+{% endblock %}
+
+{#
+  "Copiar URL" junto a "Ir al recurso": antes la URL solo se podía copiar
+  con click derecho. Conserva la clase resource-url-analytics del link de
+  core (googleanalytics cuenta las descargas con ella).
+#}
+{% block resource_actions_inner %}
+  {{ super() }}
+  {% if res.url and h.is_url(res.url) %}
+    <li>
+      <button type="button" class="btn gobar-copiar" data-gobar-copiar="{{ res.url }}" data-copiado="{{ _('URL copiada') }}">
+        <i class="fa fa-copy" aria-hidden="true"></i> <span class="gobar-copiar-label" aria-live="polite">{{ _('Copiar URL') }}</span>
+      </button>
+    </li>
   {% endif %}
 {% endblock %}
