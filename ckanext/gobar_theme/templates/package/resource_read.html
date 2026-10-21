@@ -29,3 +29,50 @@
   {% endif %}
   {% snippet 'snippets/reportar_problema.html', ref=ref %}
 {% endblock %}
+
+{#
+  Sin vistas, core muestra "Todavía no existen vistas creadas para este
+  recurso", que al público no le dice nada. Solo lo ve quien puede crearlas.
+#}
+{% block resource_view_content %}
+  {% if resource_views or h.check_access('resource_view_create', {'resource_id': res.id}) %}
+    {{ super() }}
+  {% endif %}
+{% endblock %}
+
+{#
+  URL del recurso: no se muestra en la cabecera. Se ve y se copia desde el
+  botón "URL ▾" junto a "Ir al recurso" (ver resource_actions_inner). Si la
+  URL no es un link válido, queda el texto plano de core.
+#}
+{% block resource_read_url %}
+  {% if not (res.url and h.is_url(res.url)) %}
+    {{ super() }}
+  {% endif %}
+{% endblock %}
+
+{#
+  Botón "URL ▾" junto a "Ir al recurso": abre un menú con la URL completa
+  (seleccionable) y "Copiar URL". Antes la URL era un link largo recortado
+  que solo se podía copiar con click derecho.
+  data-bs-display="static" + dropdown-menu-start/-sm-end: en mobile el menú
+  abre alineado a la izquierda del botón (las acciones van debajo del
+  título); desde sm, alineado a la derecha.
+#}
+{% block resource_actions_inner %}
+  {{ super() }}
+  {% if res.url and h.is_url(res.url) %}
+    <li class="dropdown">
+      <button type="button" class="btn gobar-url-toggle dropdown-toggle" data-bs-toggle="dropdown" data-bs-display="static" data-bs-auto-close="outside" aria-expanded="false">
+        <i class="fa fa-link" aria-hidden="true"></i> {{ _('URL') }}
+      </button>
+      <div class="dropdown-menu dropdown-menu-start dropdown-menu-sm-end gobar-url-menu">
+        <div class="gobar-url-menu-titulo">{{ _('URL del recurso') }}</div>
+        <p class="gobar-url-menu-url">{{ res.url }}</p>
+        <button type="button" class="btn gobar-copiar" data-gobar-copiar="{{ res.url }}" data-copiado="{{ _('URL copiada') }}">
+          <i class="fa fa-copy" aria-hidden="true"></i> <span class="gobar-copiar-label" aria-live="polite">{{ _('Copiar URL') }}</span>
+        </button>
+      </div>
+    </li>
+  {% endif %}
+{% endblock %}

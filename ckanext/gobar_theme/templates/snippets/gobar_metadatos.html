@@ -1,0 +1,36 @@
+{#
+  Ficha de metadatos de dataset o recurso ("Información adicional").
+  Reemplaza la tabla de core/scheming (Campo/Valor, cebrada, con el
+  "Mostrar más" de table-toggle-more, que comprimía la tabla al plegar).
+
+  rows  - lista de (rótulo, valor ya renderizado). Los valores vacíos no
+          se muestran.
+  mas   - opcional, filas que core escondía detrás de "Mostrar más". Siguen
+          en la misma lista, plegadas con un <details> nativo: al abrirlo
+          continúan las mismas columnas, sin re-layout de tabla.
+#}
+{% set filas = [] %}
+{% for label, value in rows %}
+  {% if value and (value | string | striptags | trim) %}{% do filas.append((label, value)) %}{% endif %}
+{% endfor %}
+<section class="additional-info gobar-meta">
+  <h2 class="gobar-meta-title">{{ _('Información adicional') }}</h2>
+  <dl class="gobar-meta-list">
+    {% for label, value in filas %}
+      <div class="gobar-meta-row"><dt>{{ label }}</dt><dd>{{ value }}</dd></div>
+    {% endfor %}
+  </dl>
+  {% if mas %}
+    <details class="gobar-meta-more">
+      <summary>
+        <span class="gobar-meta-mas">{{ _('Mostrar más') }}</span>
+        <span class="gobar-meta-menos">{{ _('Mostrar menos') }}</span>
+      </summary>
+      <dl class="gobar-meta-list">
+        {% for label, value in mas %}
+          <div class="gobar-meta-row"><dt>{{ label }}</dt><dd>{{ value }}</dd></div>
+        {% endfor %}
+      </dl>
+    </details>
+  {% endif %}
+</section>

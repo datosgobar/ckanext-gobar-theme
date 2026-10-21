@@ -6,7 +6,8 @@
      de los recursos del estándar datgobar pasan holgadamente los 50 caracteres
      y se veían cortados con puntos suspensivos. No se puede usar super() acá
      porque el truncate ya viene aplicado adentro del bloque de core.
-  2) Agrega la fecha de última modificación a continuación del título.
+  2) Agrega una línea de metadatos debajo del título: formato y fecha de
+     última modificación.
      last_modified es la fecha del archivo y puede venir vacía si el recurso
      nunca se re-subió: en ese caso se cae a metadata_modified y luego a created.
 #}
@@ -15,10 +16,20 @@
     {{ h.resource_display_name(res) }}<span class="format-label" property="dc:format" data-format="{{ res.format.lower() or 'data' }}">{{ h.get_translated(res, 'format') }}</span>
   </a>
   {% set res_modified = res.last_modified or res.metadata_modified or res.created %}
-  {% if res_modified %}
-    <span class="gobar-res-date">
-      <span class="gobar-res-date-label">{{ _('Últ. modificación') }}</span>
-      {{ h.gobar_format_date(res_modified) }}
-    </span>
+  <div class="gobar-res-meta">
+    {%- if res.format %}<span class="gobar-res-format">{{ h.get_translated(res, 'format') }}</span>{% endif -%}
+    {%- if res_modified %}<span class="gobar-res-date">{{ _('Modificado') }} {{ h.gobar_format_date(res_modified) }}</span>{% endif -%}
+  </div>
+{% endblock %}
+
+{#
+  3) La descripción del recurso suele repetir la del dataset (el estándar
+     datgobar la copia): si arranca igual, no se muestra.
+#}
+{% block resource_item_description %}
+  {% set res_desc = h.get_translated(res, 'description') or '' %}
+  {% set pkg_notes = h.get_translated(pkg, 'notes') or '' if pkg else '' %}
+  {% if res_desc and res_desc[:40] != pkg_notes[:40] %}
+    {{ super() }}
   {% endif %}
 {% endblock %}

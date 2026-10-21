@@ -5,9 +5,6 @@
 #}
 <aside class="gobar-reportar">
   <i class="fa fa-flag gobar-reportar-icon" aria-hidden="true"></i>
-  <div class="gobar-reportar-texto">
-    <strong>{{ _('¿Encontraste un error o un dato desactualizado?') }}</strong>
-    <span>{{ _('Avisanos y lo revisamos con el organismo responsable.') }}</span>
-  </div>
-  <a class="btn btn-primary" href="https://www.argentina.gob.ar/datos-abiertos/contacto?referencia={{ ref | urlencode }}" target="_blank" rel="noopener">{{ _('Reportar un problema') }}</a>
+  <span class="gobar-reportar-texto">{{ _('¿Encontraste un error o un dato desactualizado?') }}</span>
+  <a href="https://www.argentina.gob.ar/datos-abiertos/contacto?referencia={{ ref | urlencode }}" target="_blank" rel="noopener">{{ _('Reportar un problema') }} <span aria-hidden="true">→</span></a>
 </aside>

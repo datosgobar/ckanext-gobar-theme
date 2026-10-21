@@ -264,7 +264,7 @@ msgstr "Privado"
 msgid "There is no description for this dataset"
 msgstr "No hay descripción para este dataset"
 
-# NOTA: "Datasets" se activa como override de core más abajo (→ "datasets"),
+# NOTA: "Datasets" se activa como override de core más abajo (→ "Datasets"),
 # por eso ya NO figura acá como entrada obsoleta (evita duplicado activo+#~).
 
 # NOTA: "There are no datasets that match this search" NO existe como msgid en
@@ -488,7 +488,7 @@ msgstr "No se encontraron organismos"
 # "Datasets": tab/label en perfiles de usuario y grupo (context/*, user/*).
 # "Search datasets...": placeholder de core (ckanext.tracking) — puntos ASCII.
 msgid "Datasets"
-msgstr "datasets"
+msgstr "Datasets"
 
 msgid "Search datasets..."
 msgstr "Buscar datasets..."

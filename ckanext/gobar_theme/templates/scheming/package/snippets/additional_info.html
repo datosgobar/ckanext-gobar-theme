@@ -1,0 +1,18 @@
+{#
+  Override de ckanext-gobar-theme — "Información adicional" del dataset.
+  Mismos campos que el snippet de scheming (los del schema menos los que ya
+  se muestran en otro lado, como la licencia en el sidebar), pero renderizados con la ficha
+  snippets/gobar_metadatos.html: sin tabla, sin filas vacías.
+#}
+{%- set exclude_fields = ['id', 'title', 'name', 'notes', 'tag_string', 'license_id', 'owner_org'] -%}
+{%- set rows = [] -%}
+{%- for field in schema.dataset_fields -%}
+  {%- if field.field_name not in exclude_fields and field.display_snippet is not none -%}
+    {%- set value -%}{%- snippet 'scheming/snippets/display_field.html', field=field, data=pkg_dict, schema=schema -%}{%- endset -%}
+    {%- do rows.append((h.scheming_language_text(field.label), value)) -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- if h.check_access('package_update', {'id': pkg_dict.id}) -%}
+  {%- do rows.append((_('State'), _(pkg_dict.state))) -%}
+{%- endif -%}
+{% snippet 'snippets/gobar_metadatos.html', rows=rows %}
