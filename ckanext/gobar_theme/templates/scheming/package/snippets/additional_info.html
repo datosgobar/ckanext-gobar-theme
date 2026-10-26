@@ -4,7 +4,7 @@
   se muestran en otro lado, como la licencia en el sidebar), pero renderizados con la ficha
   snippets/gobar_metadatos.html: sin tabla, sin filas vacías.
 #}
-{%- set exclude_fields = ['id', 'title', 'name', 'notes', 'tag_string', 'license_id', 'owner_org'] -%}
+{%- set exclude_fields = ['id', 'title', 'name', 'notes', 'tag_string', 'license_id', 'owner_org', 'dataset_accrualPeriodicity', 'dataset_modified'] -%}
 {%- set rows = [] -%}
 {%- for field in schema.dataset_fields -%}
   {%- if field.field_name not in exclude_fields and field.display_snippet is not none -%}
