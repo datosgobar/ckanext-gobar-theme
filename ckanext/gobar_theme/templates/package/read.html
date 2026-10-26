@@ -5,3 +5,6 @@
   {{ super() }}
   {% snippet 'snippets/reportar_problema.html', ref=h.url_for('dataset.read', id=pkg.name, qualified=True) %}
 {% endblock %}
+
+{# Las etiquetas pasan a la columna lateral (package/read_base.html). #}
+{% block package_tags %}{% endblock %}

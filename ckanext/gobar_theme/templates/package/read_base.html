@@ -1,0 +1,66 @@
+{% ckan_extends %}
+
+{#
+  Override de ckanext-gobar-theme — vista de dataset.
+  Sin breadcrumb (el organismo ya está en la columna de datos) y con la
+  columna lateral a la derecha (order en gobar-base.css; en mobile queda debajo del
+  contenido). Reemplaza el sidebar de core (ficha del organismo con
+  placeholder, árbol y licencia en módulo aparte) por una lista de datos
+  generales: organismo, frecuencia, última actualización, licencia y
+  etiquetas.
+#}
+{% block toolbar %}{% endblock %}
+
+{% block secondary %}
+  <aside class="secondary col-md-3 gobar-dataset-lateral">
+    {% block secondary_content %}
+      {{ super() }}
+    {% endblock %}
+  </aside>
+{% endblock %}
+
+{% block package_organization %}{% endblock %}
+{% block package_social %}{% endblock %}
+
+{% block package_license %}
+  {% set schema = h.scheming_get_dataset_schema(pkg.type) %}
+  {% set f_freq = h.scheming_field_by_name(schema.dataset_fields, 'dataset_accrualPeriodicity') if schema else none %}
+  {% set frecuencia = h.scheming_choices_label(h.scheming_field_choices(f_freq), pkg.dataset_accrualPeriodicity) if f_freq and pkg.dataset_accrualPeriodicity else '' %}
+  {# Los rótulos del codelist vienen como "R/P1M (mensualmente)": se muestra solo el texto. #}
+  {% if '(' in frecuencia %}{% set frecuencia = frecuencia.split('(', 1)[1].rstrip(')') | capitalize %}{% endif %}
+  {% set modificado = pkg.dataset_modified or pkg.metadata_modified %}
+  {% set tags = pkg.tags | sort(attribute='display_name') %}
+  <dl class="gobar-datos-generales">
+    {% if pkg.organization %}
+      <div><dt>{{ _('Organismo') }}</dt>
+        <dd><a href="{{ h.url_for(pkg.organization.type ~ '.read', id=pkg.organization.name) }}">{{ h.get_translated(pkg.organization, 'title') or pkg.organization.name }}</a></dd></div>
+    {% endif %}
+    {% if frecuencia %}
+      <div><dt>{{ _('Frecuencia de actualización') }}</dt><dd>{{ frecuencia }}</dd></div>
+    {% endif %}
+    {% if modificado %}
+      <div><dt>{{ _('Última actualización') }}</dt><dd>{{ h.render_datetime(modificado) }}</dd></div>
+    {% endif %}
+    <div><dt>{{ _('License') }}</dt><dd>{% snippet "snippets/license.html", pkg_dict=pkg, text_only=True %}</dd></div>
+    {% if tags %}
+      <div><dt>{{ _('Etiquetas') }}</dt>
+        <dd>
+          <ul class="gobar-etiquetas">
+            {% for tag in tags[:6] %}
+              <li><a href="{{ h.url_for('dataset.search', tags=tag.name) }}">{{ tag.display_name }}</a></li>
+            {% endfor %}
+          </ul>
+          {% if tags | length > 6 %}
+            <details class="gobar-etiquetas-mas">
+              <summary><span class="gobar-meta-mas">{{ _('Mostrar más') }}</span><span class="gobar-meta-menos">{{ _('Mostrar menos') }}</span></summary>
+              <ul class="gobar-etiquetas">
+                {% for tag in tags[6:] %}
+                  <li><a href="{{ h.url_for('dataset.search', tags=tag.name) }}">{{ tag.display_name }}</a></li>
+                {% endfor %}
+              </ul>
+            </details>
+          {% endif %}
+        </dd></div>
+    {% endif %}
+  </dl>
+{% endblock %}
