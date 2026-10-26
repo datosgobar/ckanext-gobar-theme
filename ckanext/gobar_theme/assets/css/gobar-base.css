@@ -434,25 +434,17 @@ a.tag:hover, a.tag:focus-visible { background: var(--gobar-surface-tint); border
   .gobar-url-menu { left: 0 !important; right: 0 !important; width: auto; }
 }
 
-/* ── Página del recurso: "Ir al recurso" alineado con el título ──
-   Core sube las acciones con top: -10px y el botón quedaba más alto que la
-   primera línea del título (que arranca en el borde del padding). Sin ese
-   desplazamiento, los 35px del botón quedan centrados con la primera línea
-   (~32px). Se mantiene el float de core, pero ocupando menos alto que una
-   línea del título (botón 35px − 6px, sin el margen de la lista): así solo
-   la primera línea se acorta y las siguientes usan todo el ancho. */
-.module-resource .actions { top: 0; margin: 0 0 -6px 16px; }
-.module-resource .actions > ul { margin-bottom: 0; }
-/* Mobile: al lado del botón el título quedaba en una columna finita (una
-   palabra por línea). Ahí el título va primero a todo el ancho y las
-   acciones debajo, alineadas a la izquierda. */
-@media (max-width: 575.98px) {
-  .module-resource > .module-content { display: flex; flex-direction: column; }
-  .module-resource > .module-content > * { order: 2; }
-  .module-resource > .module-content > .page-heading { order: 0; }
-  .module-resource > .module-content > .actions { order: 1; float: none; margin: 0 0 16px; }
-  .module-resource > .module-content > .actions > ul { justify-content: flex-start !important; padding-left: 0; }
-}
+/* ── Página del recurso: título y acciones ──
+   El título va primero, a todo el ancho, y las acciones debajo, alineadas
+   a la izquierda, en cualquier ancho. Con las acciones flotando al costado
+   (core) los nombres largos del estándar datgobar quedaban en una columna
+   angosta o partidos de forma despareja, sobre todo con el tercer botón
+   ("API de datos"). */
+.module-resource > .module-content { display: flex; flex-direction: column; }
+.module-resource > .module-content > * { order: 2; }
+.module-resource > .module-content > .page-heading { order: 0; margin-bottom: 12px; }
+.module-resource > .module-content > .actions { order: 1; position: static; float: none; margin: 0 0 16px; }
+.module-resource > .module-content > .actions > ul { justify-content: flex-start !important; padding-left: 0; margin-bottom: 0; }
 
 /* Contador del sidebar de organismo/tema ("Datasets 2"): core le pone un
    border-top dotted; filete de la marca. */
@@ -468,3 +460,49 @@ a.tag:hover, a.tag:focus-visible { background: var(--gobar-surface-tint); border
    toma el color del perfil: se corre la imagen fuera de su caja y se pinta el
    mismo edificio (SVG como máscara) con el color de marca. */
 img[src$="/placeholder-organization.png"] { object-position: -99999px 0; background-color: var(--gobar-brand); -webkit-mask: var(--gobar-icono-organismo) center / contain no-repeat; mask: var(--gobar-icono-organismo) center / contain no-repeat; }
+
+/* ── Vista de dataset: columna de datos generales a la derecha ──
+   (package/read_base.html). Lista de rótulo + valor con filetes, sin
+   encabezado ni cajas, como la ficha de metadatos. Las etiquetas van
+   una por línea como enlaces de texto: más legibles y fáciles de tocar
+   que los chips chicos. */
+.wrapper > .gobar-dataset-lateral { order: 1; padding-top: 24px; }
+.gobar-datos-generales { margin: 0; }
+.gobar-datos-generales > div { padding: 12px 20px 12px 24px; border-bottom: 1px solid var(--gobar-border-soft); }
+.gobar-datos-generales > div:last-child { border-bottom: 0; }
+.gobar-datos-generales dt { margin: 0 0 2px; font-size: 14px; font-weight: 600; color: var(--gobar-gris-oscuro); }
+.gobar-datos-generales dd { margin: 0; font-size: 15px; color: var(--gobar-negro); overflow-wrap: anywhere; }
+.gobar-datos-generales dd a { color: var(--gobar-primary); }
+.gobar-etiquetas { list-style: none; margin: 0; padding: 0; }
+.gobar-etiquetas li { padding: 3px 0; }
+.gobar-etiquetas-mas > summary { display: inline-block; padding: 3px 0; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--gobar-primary); list-style: none; }
+.gobar-etiquetas-mas > summary::-webkit-details-marker { display: none; }
+.gobar-etiquetas-mas > summary::after { content: " ▾"; }
+.gobar-etiquetas-mas[open] > summary { order: 2; }
+.gobar-etiquetas-mas[open] > summary::after { content: " ▴"; }
+.gobar-etiquetas-mas .gobar-meta-menos, .gobar-etiquetas-mas[open] .gobar-meta-mas { display: none; }
+.gobar-etiquetas-mas[open] .gobar-meta-menos { display: inline; }
+.gobar-etiquetas-mas[open] { display: flex; flex-direction: column; }
+.gobar-etiquetas-mas > summary:focus-visible { outline: 2px solid var(--gobar-primary); outline-offset: 2px; }
+/* Core dibuja el filete de la columna lateral con .wrapper::before a la
+   izquierda; acá la columna está a la derecha. */
+.wrapper:has(> .gobar-dataset-lateral)::before { left: auto; right: 0; border-right: 0; border-left: 1px solid var(--gobar-border-soft); }
+/* Mobile: core apila con column-reverse; order -1 deja la columna de datos
+   generales debajo del contenido del dataset. */
+@media (max-width: 767.98px) {
+  .wrapper > .gobar-dataset-lateral { order: -1; padding-top: 0; border-top: 1px solid var(--gobar-border-soft); }
+}
+
+/* ── Página del recurso: vuelta al dataset y ventana de recursos ──
+   (package/resource_read.html) */
+.gobar-volver { display: inline-flex; gap: 6px; padding: 20px 25px 0; font-size: 14px; font-weight: 600; color: var(--gobar-primary); }
+.gobar-volver + .module-content { padding-top: 10px; }
+.gobar-dataset-lateral .resources { margin-top: 16px; }
+.gobar-ver-recursos { display: block; padding: 12px 16px; font-size: 14px; font-weight: 600; color: var(--gobar-primary); }
+/* "API de datos" (datastore): core lo pinta verde (btn-success); outline de
+   la marca, como "URL ▾". */
+.module-resource .actions .btn-success { color: var(--gobar-primary); background: var(--gobar-blanco); border: 1px solid var(--gobar-primary); font-weight: 600; }
+.module-resource .actions .btn-success:hover, .module-resource .actions .btn-success:focus-visible { color: var(--gobar-primary); background: var(--gobar-surface-tint); border-color: var(--gobar-primary); }
+/* "API de datos": ícono de código en vez del matraz de core. */
+.module-resource .actions .btn-success .fa-flask { font-size: inherit; }
+.module-resource .actions .btn-success .fa-flask::before { content: "\f121"; }  /* fa-code */

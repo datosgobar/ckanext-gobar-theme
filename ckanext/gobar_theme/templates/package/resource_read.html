@@ -2,25 +2,73 @@
 
 {#
   Override de ckanext-gobar-theme — página de un recurso.
-  Saca los dos cortes que core aplica sobre el nombre del recurso: el
-  `| truncate(50)` del <h1> y el `| truncate(30)` del breadcrumb. Los nombres
-  del estándar datgobar pasan holgadamente esos límites, así que el corte con
-  puntos suspensivos era la regla y no la excepción.
-  En ninguno de los dos alcanza con super(): el corte ya viene aplicado
-  adentro del bloque de core.
+  Saca el `| truncate(50)` que core aplica sobre el nombre del recurso en el
+  <h1>: los nombres del estándar datgobar pasan holgadamente ese límite. No
+  alcanza con super(): el corte ya viene aplicado adentro del bloque de core.
 #}
-{% block breadcrumb_content %}
-  {# super.super() saltea el bloque de core/package/resource_read.html (que es
-     el que corta el nombre) y toma el de package/base.html — organismo y
-     dataset, ya sin truncate por nuestro override de ese template. #}
-  {{ super.super() }}
-  <li class="active"><a href="" title="{{ h.resource_display_name(res) }}">{{ h.resource_display_name(res) }}</a></li>
+{#
+  Misma estructura que la vista de dataset (package/read_base.html): sin
+  breadcrumb, con un enlace de vuelta al dataset arriba del título, y la
+  columna lateral a la derecha con los datos clave del recurso y una ventana
+  de la lista de recursos. La caja del recurso (título, acciones,
+  descripción, vistas) pasa de pre_primary (ancho completo) a la columna
+  principal, para que la lateral quede a su lado.
+#}
+{% block toolbar %}{% endblock %}
+
+{% block pre_primary %}{% endblock %}
+
+{% block primary_content %}
+  {{ self.resource() }}
+  {{ super() }}
+{% endblock %}
+
+{% block resource_inner %}
+  <a class="gobar-volver" href="{{ h.url_for(pkg.type ~ '.read', id=pkg.name) }}"><span aria-hidden="true">←</span> {{ h.dataset_display_name(pkg) }}</a>
+  {{ super() }}
+{% endblock %}
+
+{% block secondary %}
+  <aside class="secondary col-md-3 gobar-dataset-lateral">
+    {% block secondary_content %}
+      <dl class="gobar-datos-generales">
+        {% set formato = res.format or res.mimetype_inner %}
+        {% if formato %}
+          <div><dt>{{ _('Format') }}</dt><dd>{{ formato }}</dd></div>
+        {% endif %}
+        {% set actualizado = res.last_modified or res.created %}
+        {% if actualizado %}
+          <div><dt>{{ _('Data last updated') }}</dt><dd>{{ h.render_datetime(actualizado) }}</dd></div>
+        {% endif %}
+        <div><dt>{{ _('License') }}</dt><dd>{% snippet "snippets/license.html", pkg_dict=pkg, text_only=True %}</dd></div>
+      </dl>
+      {#- ponytail: ventana fija de 8 alrededor del recurso activo; la lista completa queda en el dataset. -#}
+      {% set recursos = pkg.resources %}
+      {% set total = recursos | length %}
+      {% set pos = (recursos | map(attribute='id') | list).index(res.id) if res.id in (recursos | map(attribute='id') | list) else 0 %}
+      {% set desde = [0, [pos - 3, total - 8] | min] | max %}
+      {#- El snippet toma la lista de pkg.resources (ignora `resources`): se le pasa una copia del dataset con la ventana. -#}
+      {% snippet "package/snippets/resources.html", pkg=dict(pkg, resources=recursos[desde:desde + 8]), active=res.id, action='read' %}
+      {% if total > 8 %}
+        <a class="gobar-ver-recursos" href="{{ h.url_for(pkg.type ~ '.read', id=pkg.name) }}#dataset-resources">{{ _('Ver los {n} recursos').format(n=total) }} <span aria-hidden="true">→</span></a>
+      {% endif %}
+    {% endblock %}
+  </aside>
 {% endblock %}
 
 {% block resource_read_title %}<h1 class="page-heading" title="{{ h.resource_display_name(res) }}">{{ h.resource_display_name(res) }}</h1>{% endblock %}
 
+{#
+  Contenido del recurso sin el fallback de core: cuando el recurso no tiene
+  descripción, core muestra "Descripción del conjunto de datos:" con la del
+  dataset y "Fuente: <dataset>", que repite el enlace de vuelta.
+#}
 {% block resource_content %}
-  {{ super() }}
+  {{ self.resource_read_title() }}
+  {{ self.resource_read_url() }}
+  {% if res.description %}
+    <div class="prose notes" property="rdfs:label">{{ h.render_markdown(res.description) }}</div>
+  {% endif %}
   {# Con el nombre del dataset la URL pasa los 128 caracteres del formulario en
      ~1/3 de los casos; con los ids queda siempre en 111. #}
   {% set ref = h.url_for('resource.read', id=pkg.name, resource_id=res.id, qualified=True) %}
@@ -55,9 +103,8 @@
   Botón "URL ▾" junto a "Ir al recurso": abre un menú con la URL completa
   (seleccionable) y "Copiar URL". Antes la URL era un link largo recortado
   que solo se podía copiar con click derecho.
-  data-bs-display="static" + dropdown-menu-start/-sm-end: en mobile el menú
-  abre alineado a la izquierda del botón (las acciones van debajo del
-  título); desde sm, alineado a la derecha.
+  data-bs-display="static" + dropdown-menu-start: el menú abre alineado a la
+  izquierda del botón (las acciones van debajo del título, a la izquierda).
 #}
 {% block resource_actions_inner %}
   {{ super() }}
@@ -66,7 +113,7 @@
       <button type="button" class="btn gobar-url-toggle dropdown-toggle" data-bs-toggle="dropdown" data-bs-display="static" data-bs-auto-close="outside" aria-expanded="false">
         <i class="fa fa-link" aria-hidden="true"></i> {{ _('URL') }}
       </button>
-      <div class="dropdown-menu dropdown-menu-start dropdown-menu-sm-end gobar-url-menu">
+      <div class="dropdown-menu dropdown-menu-start gobar-url-menu">
         <div class="gobar-url-menu-titulo">{{ _('URL del recurso') }}</div>
         <p class="gobar-url-menu-url">{{ res.url }}</p>
         <button type="button" class="btn gobar-copiar" data-gobar-copiar="{{ res.url }}" data-copiado="{{ _('URL copiada') }}">
